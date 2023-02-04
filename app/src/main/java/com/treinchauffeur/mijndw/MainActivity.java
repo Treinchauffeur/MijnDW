@@ -1,7 +1,7 @@
 package com.treinchauffeur.mijndw;
 
-import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -13,7 +13,7 @@ import com.treinchauffeur.mijndw.io.DWReader;
 
 import java.io.File;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
     public static final int PICK_FILE_REQUEST = 1312;
     public static final String TAG = "MainActivity";
 
@@ -25,8 +25,9 @@ public class MainActivity extends AppCompatActivity {
         btnLoadFile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                intent.setType("*/*");  // specify any file type
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("text/*");
                 startActivityForResult(intent, PICK_FILE_REQUEST);
             }
         });
@@ -36,11 +37,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        Log.d(TAG, "File retrieved, loading.. "+data.getData().getPath());
 
-        if (requestCode == PICK_FILE_REQUEST && resultCode == RESULT_OK && data.getData() != null) {
+        if (requestCode == PICK_FILE_REQUEST && resultCode == RESULT_OK && data != null) {
+            Log.d(TAG, "File retrieved, loading.. " + data);
             Uri fileUri = data.getData();
-            DWReader.startConversion(new File(fileUri.getPath()));
+            DWReader.startConversion(this, fileUri);
         }
     }
 }

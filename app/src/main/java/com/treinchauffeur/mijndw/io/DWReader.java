@@ -1,12 +1,20 @@
 package com.treinchauffeur.mijndw.io;
 
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.net.Uri;
+import android.util.Log;
+
 import com.treinchauffeur.mijndw.misc.Logger;
 import com.treinchauffeur.mijndw.misc.Settings;
 import com.treinchauffeur.mijndw.obj.Shift;
 import com.treinchauffeur.mijndw.obj.Staff;
 
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -24,8 +32,11 @@ import java.util.concurrent.TimeUnit;
 
 public class DWReader {
 
+    private static final String[] fileContents = new String[13];
     private static final String TAG = "Run";
-    public static File toRead;
+    public static Uri toRead;
+    @SuppressLint("SimpleDateFormat")
+    static SimpleDateFormat sdf = new SimpleDateFormat("dd-mm-yyyy HH:mm");
 
     private static final ArrayList<Shift> dw = new ArrayList<>();
     private static final Shift mondayShift = new Shift();
@@ -36,38 +47,59 @@ public class DWReader {
     private static final Shift saturdayShift = new Shift();
     private static final Shift sundayShift = new Shift();
     private static final Staff staff = new Staff();
+    private static Context context;
 
-    static SimpleDateFormat sdf = new SimpleDateFormat("dd-mm-yyyy HH:mm");
-
-    public static void startConversion(File f) {
-        Logger.log(TAG, "started reading file");
+    public static void startConversion(Context c, Uri uri) {
+        Log.d(TAG, "started reading file: ");
+        context = c;
+        toRead = uri;
         if (toRead == null) {
-            Logger.log(TAG, "No valid DW files were present to read.");
+            Log.e(TAG, "No valid DW files were present to read.");
             return;
         }
+        Log.d(TAG, "Using file: " + uri.getPath());
+        readFile(uri);
+        processFile();
+        //setCalendarItems();
 
-        if (f.getName().startsWith("DW")) {
-            toRead = f;
-            readDWFile(f);
-            setCalendarItems();
-            Logger.log(TAG, "Using file: " + toRead.getAbsolutePath());
-        } else {
-            Logger.log(TAG, "Supplied file is probably tampered with, ignoring..");
-            return;
+    }
+
+    private static void readFile(Uri uri) {
+        try {
+            InputStream inputStream = context.getContentResolver().openInputStream(uri);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+
+            fileContents[0] = reader.readLine(); //first line: Donderdagse Week van WW-YYYY
+            fileContents[1] = reader.readLine(); // Empty for formatting
+            fileContents[2] = reader.readLine(); //Staff number + name
+            fileContents[3] = reader.readLine(); //Empty again
+            fileContents[4] = reader.readLine(); //Table titles
+            fileContents[5] = reader.readLine(); //Table formatting
+            fileContents[6] = reader.readLine(); //Monday
+            fileContents[7] = reader.readLine(); //Tuesday
+            fileContents[8] = reader.readLine(); //Wednesday
+            fileContents[9] = reader.readLine(); //Thursday
+            fileContents[10] = reader.readLine(); //Friday
+            fileContents[11] = reader.readLine(); //Saturday
+            fileContents[12] = reader.readLine(); //Sunday
+
+            reader.close();
+            Log.d(TAG, fileContents[12]);
+        } catch (IOException e) {
+            Log.e(TAG, "readFile: ", e);
         }
-
     }
 
     /**
      * Read the DW file & save to raw data
-     *
-     * @param f Line indexing: 0=days in text, 1=date in 31-12 format, 2=shift
-     *          number/letters, 3=starttime formatted to 24:60, 4=endtime formatted
-     *          to 24:60, 5=profession, 6=location
+     * <p>
+     * Line indexing: 0=days in text, 1=date in 31-12 format, 2=shift
+     * number/letters, 3=starttime formatted to 24:60, 4=endtime formatted
+     * to 24:60, 5=profession, 6=location
      */
 
     @SuppressWarnings("deprecation")
-    private static void readDWFile(File f) {
+    private static void processFile() {
         int staffNumber = -1, weekNumber = -1, yearNumber = -1;
         SimpleDateFormat format = new SimpleDateFormat("HH:mm");
         java.util.Date date1;
@@ -80,10 +112,9 @@ public class DWReader {
         long minutes;
         try {
             // Defining scanner
-            Scanner scanner = new Scanner(f);
 
             // First line - weeknumber + year
-            String startingLine = scanner.nextLine().replaceAll("\\s+", " ");
+            String startingLine = fileContents[0].replaceAll("\\s+", " ");
             String[] dateYear = startingLine.split("-");
             String weekNrString = dateYear[0].substring(Math.max(dateYear[0].length() - 2, 0));
             if (weekNrString.startsWith(" "))
@@ -93,10 +124,10 @@ public class DWReader {
             yearNumber = Integer.parseInt(dateYear[1]);
 
             // Second line - empty for formatting purposes
-            String emptyLineOne = scanner.nextLine().replaceAll("\\s+", " ");
+            String emptyLineOne = fileContents[1].replaceAll("\\s+", " ");
 
             // Third line - staff number
-            String staffNumberLine = scanner.nextLine().replaceAll("\\s+", " ");
+            String staffNumberLine = fileContents[2].replaceAll("\\s+", " ");
             staffNumber = Integer.parseInt(staffNumberLine.split(" ")[0]);
 
             staff.setStaffNumber(staffNumber);
@@ -110,19 +141,19 @@ public class DWReader {
             sundayShift.setStaff(staff);
 
             // Fourth line - empty for formatting purposes
-            String emptyLineTwo = scanner.nextLine().replaceAll("\\s+", " ");
+            String emptyLineTwo = fileContents[3].replaceAll("\\s+", " ");
 
             // Fifth line - headers for formatting
-            String headersLine = scanner.nextLine().replaceAll("\\s+", " ");
+            String headersLine = fileContents[4].replaceAll("\\s+", " ");
 
             // Sixth line - lines underneath headers, also worthless
-            String underscoresLine = scanner.nextLine().replaceAll("\\s+", " ");
+            String underscoresLine = fileContents[5].replaceAll("\\s+", " ");
 
-            Logger.debug(TAG, "DW FOR " + staffNumberLine + ":");
-            Logger.debug(TAG, "//////////// START WEEK " + weekNumber + " OF " + yearNumber + " ////////////");
+            Log.d(TAG, "DW FOR " + staffNumberLine + ":");
+            Log.d(TAG, "//////////// START WEEK " + weekNumber + " OF " + yearNumber + " ////////////");
 
             // Seventh line - first actual day listing
-            String mondayLine = scanner.nextLine().replaceAll("\\s+", " ");
+            String mondayLine = fileContents[6].replaceAll("\\s+", " ");
             String mondayModifier = "-1";
             String[] mondayArray = mondayLine.split(" ");
             if (mondayArray[2].equals("!") || mondayArray[2].equals("@") || mondayArray[2].equals(">")
@@ -141,7 +172,7 @@ public class DWReader {
 
             String mondayProfession = "";
             String mondayLocation = "";
-            if (mondayArray.length > 5) { // Things like CURS don't have a function etc listed
+            if (mondayArray.length > 6) { // Things like CURS don't have a function etc listed
                 mondayProfession = mondayArray[5].substring(0, 1).toUpperCase()
                         + mondayArray[5].substring(1).toLowerCase();
                 mondayLocation = mondayArray[6].substring(0, 1).toUpperCase()
@@ -150,7 +181,8 @@ public class DWReader {
             String mondayShiftNumber = mondayArray[2];
             String mondayStartTime = "";
             String mondayEndTime = "";
-            if (!mondayShiftNumber.equalsIgnoreCase("R") && !mondayShiftNumber.equalsIgnoreCase("streepjesdag")) {
+            if (!mondayShiftNumber.equalsIgnoreCase("R") && !mondayShiftNumber.equalsIgnoreCase("streepjesdag")
+                    && !mondayShiftNumber.contains("VL")) {
                 mondayStartTime = mondayArray[3];
                 mondayEndTime = mondayArray[4];
             }
@@ -168,12 +200,12 @@ public class DWReader {
                 mondayTitle = mondayProfession + " " + mondayLocation + " " + mondayShiftNumber + " " + mondayStartTime
                         + "-" + mondayEndTime;
 
-            Logger.debug(TAG, mondayTitle);
+            Log.d(TAG, mondayTitle);
 
             int mondayMonth = Integer.parseInt(mondayArray[1].split("-")[1]);
             int mondayDay = Integer.parseInt(mondayArray[1].split("-")[0]);
             if (mondayArray.length <= 3)
-                Logger.log(TAG, "Staff " + mondayShift.getStaff().getStaffName() + " is free on monday.");
+                Log.d(TAG, "Staff " + mondayShift.getStaff().getStaffName() + " is free on monday.");
             else {
                 String mondayStartDate = "";
                 if ((weekNumber == 52 || weekNumber == 53) && mondayMonth == 1) {// we passed newyear's
@@ -213,7 +245,7 @@ public class DWReader {
 
                 dw.add(mondayShift);
 
-                Logger.debug(TAG,
+                Log.d(TAG,
                         "staff " + mondayShift.getStaff().getStaffName() + " runs shift " + mondayShift.getLocation()
                                 + mondayShift.getShiftNumber() + " at " + mondayShift.getStartTime()
                                 + " with a shift length of " + mondayShift.getLengthHours() + " hours and "
@@ -221,7 +253,7 @@ public class DWReader {
             }
 
             // Eighth line - second day
-            String tuesdayLine = scanner.nextLine().replaceAll("\\s+", " ");
+            String tuesdayLine = fileContents[7].replaceAll("\\s+", " ");
             String tuesdayModifier = "-1";
             String[] tuesdayArray = tuesdayLine.split(" ");
             if (tuesdayArray[2].equals("!") || tuesdayArray[2].equals("@") || tuesdayArray[2].equals(">")
@@ -240,7 +272,7 @@ public class DWReader {
 
             String tuesdayProfession = "";
             String tuesdayLocation = "";
-            if (tuesdayArray.length > 5) { // Things like CURS don't have a function etc listed
+            if (tuesdayArray.length > 6) { // Things like CURS don't have a function etc listed
                 tuesdayProfession = tuesdayArray[5].substring(0, 1).toUpperCase()
                         + tuesdayArray[5].substring(1).toLowerCase();
                 tuesdayLocation = tuesdayArray[6].substring(0, 1).toUpperCase()
@@ -249,7 +281,7 @@ public class DWReader {
             String tuesdayShiftNumber = tuesdayArray[2];
             String tuesdayStartTime = "";
             String tuesdayEndTime = "";
-            if (!tuesdayShiftNumber.equalsIgnoreCase("R") && !tuesdayShiftNumber.equalsIgnoreCase("streepjesdag")) {
+            if (!tuesdayShiftNumber.equalsIgnoreCase("R") && !tuesdayShiftNumber.equalsIgnoreCase("streepjesdag") && !tuesdayShiftNumber.contains("VL")) {
                 tuesdayStartTime = tuesdayArray[3];
                 tuesdayEndTime = tuesdayArray[4];
             }
@@ -257,7 +289,7 @@ public class DWReader {
             int tuesdayMonth = Integer.parseInt(tuesdayArray[1].split("-")[1]);
             int tuesdayDay = Integer.parseInt(tuesdayArray[1].split("-")[0]);
             if (tuesdayArray.length <= 3)
-                Logger.log(TAG, "Staff " + tuesdayShift.getStaff().getStaffName() + " is free on tuesday.");
+                Log.d(TAG, "Staff " + tuesdayShift.getStaff().getStaffName() + " is free on tuesday.");
             else {
                 String tuesdayStartDate = "";
                 if ((weekNumber == 52 || weekNumber == 53) && tuesdayMonth == 1) {// we passed newyear's
@@ -297,7 +329,7 @@ public class DWReader {
 
                 dw.add(tuesdayShift);
 
-                Logger.debug(TAG,
+                Log.d(TAG,
                         "staff " + tuesdayShift.getStaff().getStaffName() + " runs shift " + tuesdayShift.getLocation()
                                 + tuesdayShift.getShiftNumber() + " at " + tuesdayShift.getStartTime()
                                 + " with a shift length of " + tuesdayShift.getLengthHours() + " hours and "
@@ -305,7 +337,7 @@ public class DWReader {
             }
 
             // Ninth line - third day
-            String wednesdayLine = scanner.nextLine().replaceAll("\\s+", " ");
+            String wednesdayLine = fileContents[8].replaceAll("\\s+", " ");
             String wednesdayModifier = "-1";
             String[] wednesdayArray = wednesdayLine.split(" ");
             if (wednesdayArray[2].equals("!") || wednesdayArray[2].equals("@") || wednesdayArray[2].equals(">")
@@ -321,7 +353,7 @@ public class DWReader {
 
             String wednesdayProfession = "";
             String wednesdayLocation = "";
-            if (wednesdayArray.length > 5) { // Things like CURS don't have a function etc listed
+            if (wednesdayArray.length > 6) { // Things like CURS don't have a function etc listed
                 wednesdayProfession = wednesdayArray[5].substring(0, 1).toUpperCase()
                         + wednesdayArray[5].substring(1).toLowerCase();
                 wednesdayLocation = wednesdayArray[6].substring(0, 1).toUpperCase()
@@ -330,7 +362,7 @@ public class DWReader {
             String wednesdayShiftNumber = wednesdayArray[2];
             String wednesdayStartTime = "";
             String wednesdayEndTime = "";
-            if (!wednesdayShiftNumber.equalsIgnoreCase("R") && !wednesdayShiftNumber.equalsIgnoreCase("streepjesdag")) {
+            if (!wednesdayShiftNumber.equalsIgnoreCase("R") && !wednesdayShiftNumber.equalsIgnoreCase("streepjesdag") && !wednesdayShiftNumber.contains("VL")) {
                 wednesdayStartTime = wednesdayArray[3];
                 wednesdayEndTime = wednesdayArray[4];
             }
@@ -338,7 +370,7 @@ public class DWReader {
             int wednesdayMonth = Integer.parseInt(wednesdayArray[1].split("-")[1]);
             int wednesdayDay = Integer.parseInt(wednesdayArray[1].split("-")[0]);
             if (wednesdayArray.length <= 3)
-                Logger.log(TAG, "Staff " + wednesdayShift.getStaff().getStaffName() + " is free on wednesday.");
+                Log.d(TAG, "Staff " + wednesdayShift.getStaff().getStaffName() + " is free on wednesday.");
             else {
                 String wednesdayStartDate = "";
                 if ((weekNumber == 52 || weekNumber == 53) && wednesdayMonth == 1) {// we passed newyear's
@@ -378,14 +410,14 @@ public class DWReader {
 
                 dw.add(wednesdayShift);
 
-                Logger.debug(TAG, "staff " + wednesdayShift.getStaff().getStaffName() + " runs shift "
+                Log.d(TAG, "staff " + wednesdayShift.getStaff().getStaffName() + " runs shift "
                         + wednesdayShift.getLocation() + wednesdayShift.getShiftNumber() + " at "
                         + wednesdayShift.getStartTime() + " with a shift length of " + wednesdayShift.getLengthHours()
                         + " hours and " + wednesdayShift.getLengthMinutes() + " minutes.");
             }
 
             // Tenth line - fourth day
-            String thursdayLine = scanner.nextLine().replaceAll("\\s+", " ");
+            String thursdayLine = fileContents[9].replaceAll("\\s+", " ");
             String thursdayModifier = "-1";
             String[] thursdayArray = thursdayLine.split(" ");
             if (thursdayArray[2].equals("!") || thursdayArray[2].equals("@") || thursdayArray[2].equals(">")
@@ -404,7 +436,7 @@ public class DWReader {
 
             String thursdayProfession = "";
             String thursdayLocation = "";
-            if (thursdayArray.length > 5) { // Things like CURS don't have a function etc listed
+            if (thursdayArray.length > 6) { // Things like CURS don't have a function etc listed
                 thursdayProfession = thursdayArray[5].substring(0, 1).toUpperCase()
                         + thursdayArray[5].substring(1).toLowerCase();
                 thursdayLocation = thursdayArray[6].substring(0, 1).toUpperCase()
@@ -413,7 +445,7 @@ public class DWReader {
             String thursdayShiftNumber = thursdayArray[2];
             String thursdayStartTime = "";
             String thursdayEndTime = "";
-            if (!thursdayShiftNumber.equalsIgnoreCase("R") && !thursdayShiftNumber.equalsIgnoreCase("streepjesdag")) {
+            if (!thursdayShiftNumber.equalsIgnoreCase("R") && !thursdayShiftNumber.equalsIgnoreCase("streepjesdag") && !thursdayShiftNumber.contains("VL")) {
                 thursdayStartTime = thursdayArray[3];
                 thursdayEndTime = thursdayArray[4];
             }
@@ -421,7 +453,7 @@ public class DWReader {
             int thursdayMonth = Integer.parseInt(thursdayArray[1].split("-")[1]);
             int thursdayDay = Integer.parseInt(thursdayArray[1].split("-")[0]);
             if (thursdayArray.length <= 3)
-                Logger.log(TAG, "Staff " + thursdayShift.getStaff().getStaffName() + " is free on thursday.");
+                Log.d(TAG, "Staff " + thursdayShift.getStaff().getStaffName() + " is free on thursday.");
             else {
                 String thursdayStartDate = "";
                 if ((weekNumber == 52 || weekNumber == 53) && thursdayMonth == 1) {// we passed newyear's
@@ -461,14 +493,14 @@ public class DWReader {
 
                 dw.add(thursdayShift);
 
-                Logger.debug(TAG, "staff " + thursdayShift.getStaff().getStaffName() + " runs shift "
+                Log.d(TAG, "staff " + thursdayShift.getStaff().getStaffName() + " runs shift "
                         + thursdayShift.getLocation() + thursdayShift.getShiftNumber() + " at "
                         + thursdayShift.getStartTime() + " with a shift length of " + thursdayShift.getLengthHours()
                         + " hours and " + thursdayShift.getLengthMinutes() + " minutes.");
             }
 
             // Eleventh line - fifth day
-            String fridayLine = scanner.nextLine().replaceAll("\\s+", " ");
+            String fridayLine = fileContents[10].replaceAll("\\s+", " ");
             String fridayModifier = "-1";
             String[] fridayArray = fridayLine.split(" ");
             if (fridayArray[2].equals("!") || fridayArray[2].equals("@") || fridayArray[2].equals(">")
@@ -487,7 +519,7 @@ public class DWReader {
 
             String fridayProfession = "";
             String fridayLocation = "";
-            if (fridayArray.length > 5) { // Things like CURS don't have a function etc listed
+            if (fridayArray.length > 6) { // Things like CURS don't have a function etc listed
                 fridayProfession = fridayArray[5].substring(0, 1).toUpperCase()
                         + fridayArray[5].substring(1).toLowerCase();
                 fridayLocation = fridayArray[6].substring(0, 1).toUpperCase()
@@ -496,7 +528,7 @@ public class DWReader {
             String fridayShiftNumber = fridayArray[2];
             String fridayStartTime = "";
             String fridayEndTime = "";
-            if (!fridayShiftNumber.equalsIgnoreCase("R") && !fridayShiftNumber.equalsIgnoreCase("streepjesdag")) {
+            if (!fridayShiftNumber.equalsIgnoreCase("R") && !fridayShiftNumber.equalsIgnoreCase("streepjesdag") && !fridayShiftNumber.contains("VL")) {
                 fridayStartTime = fridayArray[3];
                 fridayEndTime = fridayArray[4];
             }
@@ -504,7 +536,7 @@ public class DWReader {
             int fridayMonth = Integer.parseInt(fridayArray[1].split("-")[1]);
             int fridayDay = Integer.parseInt(fridayArray[1].split("-")[0]);
             if (fridayArray.length <= 3)
-                Logger.log(TAG, "Staff " + fridayShift.getStaff().getStaffName() + " is free on friday.");
+                Log.d(TAG, "Staff " + fridayShift.getStaff().getStaffName() + " is free on friday.");
             else {
                 String fridayStartDate = "";
                 if ((weekNumber == 52 || weekNumber == 53) && fridayMonth == 1) {// we passed newyear's
@@ -544,7 +576,7 @@ public class DWReader {
 
                 dw.add(fridayShift);
 
-                Logger.debug(TAG,
+                Log.d(TAG,
                         "staff " + fridayShift.getStaff().getStaffName() + " runs shift " + fridayShift.getLocation()
                                 + fridayShift.getShiftNumber() + " at " + fridayShift.getStartTime()
                                 + " with a shift length of " + fridayShift.getLengthHours() + " hours and "
@@ -552,7 +584,7 @@ public class DWReader {
             }
 
             // Twelveth line - sixth day
-            String saturdayLine = scanner.nextLine().replaceAll("\\s+", " ");
+            String saturdayLine = fileContents[11].replaceAll("\\s+", " ");
             String saturdayModifier = "-1";
             String[] saturdayArray = saturdayLine.split(" ");
             if (saturdayArray[2].equals("!") || saturdayArray[2].equals("@") || saturdayArray[2].equals(">")
@@ -571,7 +603,7 @@ public class DWReader {
 
             String saturdayProfession = "";
             String saturdayLocation = "";
-            if (saturdayArray.length > 5) { // Things like CURS don't have a function etc listed
+            if (saturdayArray.length > 6) { // Things like CURS don't have a function etc listed
                 saturdayProfession = saturdayArray[5].substring(0, 1).toUpperCase()
                         + saturdayArray[5].substring(1).toLowerCase();
                 saturdayLocation = saturdayArray[6].substring(0, 1).toUpperCase()
@@ -580,7 +612,7 @@ public class DWReader {
             String saturdayShiftNumber = saturdayArray[2];
             String saturdayStartTime = "";
             String saturdayEndTime = "";
-            if (!saturdayShiftNumber.equalsIgnoreCase("R") && !saturdayShiftNumber.equalsIgnoreCase("streepjesdag")) {
+            if (!saturdayShiftNumber.equalsIgnoreCase("R") && !saturdayShiftNumber.equalsIgnoreCase("streepjesdag") && !saturdayShiftNumber.contains("VL")) {
                 saturdayStartTime = saturdayArray[3];
                 saturdayEndTime = saturdayArray[4];
             }
@@ -588,7 +620,7 @@ public class DWReader {
             int saturdayMonth = Integer.parseInt(saturdayArray[1].split("-")[1]);
             int saturdayDay = Integer.parseInt(saturdayArray[1].split("-")[0]);
             if (saturdayArray.length <= 3)
-                Logger.log(TAG, "Staff " + saturdayShift.getStaff().getStaffName() + " is free on saturday.");
+                Log.d(TAG, "Staff " + saturdayShift.getStaff().getStaffName() + " is free on saturday.");
             else {
                 String saturdayStartDate = "";
                 if ((weekNumber == 52 || weekNumber == 53) && saturdayMonth == 1) {// we passed newyear's
@@ -628,14 +660,14 @@ public class DWReader {
 
                 dw.add(saturdayShift);
 
-                Logger.debug(TAG, "staff " + saturdayShift.getStaff().getStaffName() + " runs shift "
+                Log.d(TAG, "staff " + saturdayShift.getStaff().getStaffName() + " runs shift "
                         + saturdayShift.getLocation() + saturdayShift.getShiftNumber() + " at "
                         + saturdayShift.getStartTime() + " with a shift length of " + saturdayShift.getLengthHours()
                         + " hours and " + saturdayShift.getLengthMinutes() + " minutes.");
             }
 
             // Thirteenth line - seventh day
-            String sundayLine = scanner.nextLine().replaceAll("\\s+", " ");
+            String sundayLine = fileContents[12].replaceAll("\\s+", " ");
             String sundayModifier = "-1";
             String[] sundayArray = sundayLine.split(" ");
             if (sundayArray[2].equals("!") || sundayArray[2].equals("@") || sundayArray[2].equals(">")
@@ -654,7 +686,7 @@ public class DWReader {
 
             String sundayProfession = "";
             String sundayLocation = "";
-            if (sundayArray.length > 5) { // Things like CURS don't have a function etc listed
+            if (sundayArray.length > 6) { // Things like CURS don't have a function etc listed
                 sundayProfession = sundayArray[5].substring(0, 1).toUpperCase()
                         + sundayArray[5].substring(1).toLowerCase();
                 sundayLocation = sundayArray[6].substring(0, 1).toUpperCase()
@@ -663,7 +695,7 @@ public class DWReader {
             String sundayShiftNumber = sundayArray[2];
             String sundayStartTime = "";
             String sundayEndTime = "";
-            if (!sundayShiftNumber.equalsIgnoreCase("R") && !sundayShiftNumber.equalsIgnoreCase("streepjesdag")) {
+            if (!sundayShiftNumber.equalsIgnoreCase("R") && !sundayShiftNumber.equalsIgnoreCase("streepjesdag") && !sundayShiftNumber.contains("VL")) {
                 sundayStartTime = sundayArray[3];
                 sundayEndTime = sundayArray[4];
             }
@@ -671,7 +703,7 @@ public class DWReader {
             int sundayMonth = Integer.parseInt(sundayArray[1].split("-")[1]);
             int sundayDay = Integer.parseInt(sundayArray[1].split("-")[0]);
             if (sundayArray.length <= 3)
-                Logger.log(TAG, "Staff " + sundayShift.getStaff().getStaffName() + " is free on sunday.");
+                Log.d(TAG, "Staff " + sundayShift.getStaff().getStaffName() + " is free on sunday.");
             else {
                 String sundayStartDate = "";
                 if ((weekNumber == 52 || weekNumber == 53) && sundayMonth == 1) {// we passed newyear's
@@ -711,29 +743,19 @@ public class DWReader {
 
                 dw.add(sundayShift);
 
-                Logger.debug(TAG,
+                Log.d(TAG,
                         "staff " + sundayShift.getStaff().getStaffName() + " runs shift " + sundayShift.getLocation()
                                 + sundayShift.getShiftNumber() + " at " + sundayShift.getStartTime()
                                 + " with a shift length of " + sundayShift.getLengthHours() + " hours and "
                                 + sundayShift.getLengthMinutes() + " minutes.");
             }
 
-            Logger.debug(TAG, "//////////// END OF WEEK ////////////");
+            Log.d(TAG, "//////////// END OF WEEK ////////////");
 
-            Logger.log(TAG, "Finished scanning " + toRead.getAbsolutePath());
-
-            scanner.close();
-        } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Log.d(TAG, "Finished scanning " + toRead.getPath());
         } catch (ParseException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-        }
-
-        if (!Settings.DEBUG) {
-            if (!f.renameTo(new File("input/#USED DW" + weekNumber + " " + yearNumber + " " + staffNumber + ".txt")))
-                f.delete();
         }
 
     }
@@ -771,7 +793,7 @@ public class DWReader {
 			Uid uid = ug.generateUid();
 			event.getProperties().add(uid);
 		}
-		Logger.debug(TAG, "Shift list size: " + dw.size());*/
+		Log.d(TAG, "Shift list size: " + dw.size());*/
 
     }
 }
