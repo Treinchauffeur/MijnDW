@@ -41,6 +41,8 @@ public class MainActivity extends Activity {
         clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //Loading all the UI elements
         dwContent = findViewById(R.id.dwContent);
         convertBtn = findViewById(R.id.btnConvertFile);
         btnLoadFile = findViewById(R.id.btnLoadFile);
@@ -56,8 +58,6 @@ public class MainActivity extends Activity {
             intent.setType("text/*");
             startActivityForResult(intent, PICK_FILE_REQUEST);
         });
-
-
     }
 
     @Override
@@ -75,6 +75,7 @@ public class MainActivity extends Activity {
             convertBtn.setVisibility(View.VISIBLE);
             dwContent.setText(dwReader.fullFileString());
 
+            //Converts the loaded DW data to a iCalendar string
             convertBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -87,6 +88,8 @@ public class MainActivity extends Activity {
                 }
             });
 
+            //Saves the file to a temporary location & offers it to the user using an intent.
+            //Sends user to the Google Calendar app page on the play store if no calendar app is available.
             btnSaveFile.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -110,6 +113,7 @@ public class MainActivity extends Activity {
                         Toast.makeText(MainActivity.this, "Please install a calendar app.", Toast.LENGTH_SHORT).show();
                         startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=com.google.android.calendar")));
                     } catch (IOException e) {
+                        Toast.makeText(MainActivity.this, "An error occurred.", Toast.LENGTH_SHORT).show();
                         e.printStackTrace();
                     }
                 }

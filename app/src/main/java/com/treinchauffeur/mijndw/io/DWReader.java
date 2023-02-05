@@ -782,6 +782,11 @@ public class DWReader {
         processFile(context);
     }
 
+    /**
+     * Puts all the shift details from their respective objects in to an iCalendar String using iWeekly.
+     *
+     * @return the full, completed iCalendar String.
+     */
     public String getCalendarICS() {
         String ics = "";
         ICalendar iCal = new ICalendar();
@@ -924,6 +929,9 @@ public class DWReader {
 
     }
 
+    /**
+     * @return the entire original DW file contents in form of a String.
+     */
     public String fullFileString() {
         String str = "";
         for (String fileContent : fileContents) {
