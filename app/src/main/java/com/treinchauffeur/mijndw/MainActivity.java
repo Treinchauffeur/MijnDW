@@ -2,6 +2,9 @@ package com.treinchauffeur.mijndw;
 
 
 import android.app.Activity;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -16,21 +19,24 @@ import com.treinchauffeur.mijndw.io.DWReader;
 public class MainActivity extends Activity {
     public static final int PICK_FILE_REQUEST = 1312;
     public static final String TAG = "MainActivity";
+    ClipboardManager clipboard;
 
     DWReader dwReader;
 
     Button convertBtn, btnLoadFile;
-    EditText dwContent;
+    EditText dwContent, icsContent;
     TextView loadedStatus;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         dwContent = findViewById(R.id.dwContent);
         convertBtn = findViewById(R.id.btnConvertFile);
         btnLoadFile = findViewById(R.id.btnLoadFile);
         loadedStatus = findViewById(R.id.loadedStatus);
+        icsContent = findViewById(R.id.icsContent);
 
         dwReader = new DWReader(this);
 
@@ -62,7 +68,11 @@ public class MainActivity extends Activity {
             convertBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    //TODO convert to ICAL using biweekly
+                    icsContent.setVisibility(View.VISIBLE);
+                    icsContent.setText(dwReader.getCalendarICS());
+                    ClipData clip = ClipData.newPlainText("DW calenderitems", dwReader.getCalendarICS());
+                    clipboard.setPrimaryClip(clip);
+                    //TODO Test event didnt load into gCal.
                 }
             });
         }

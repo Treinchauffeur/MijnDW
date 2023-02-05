@@ -39,6 +39,7 @@ public class DWReader {
     private static final String[] fileContents = new String[13];
     private static final String TAG = "Run";
     public static Uri toRead;
+    public static String icsString;
     @SuppressLint("SimpleDateFormat")
     static SimpleDateFormat sdf = new SimpleDateFormat("dd-mm-yyyy HH:mm");
 
@@ -763,47 +764,14 @@ public class DWReader {
 
     }
 
-    private static void setCalendarItems() {
-		/*net.fortuna.ical4j.model.Calendar calendar = new net.fortuna.ical4j.model.Calendar();
-		calendar.getProperties().add(new ProdId("-//Ben Fortuna//iCal4j 1.0//EN"));
-		calendar.getProperties().add(Version.VERSION_2_0);
-		calendar.getProperties().add(CalScale.GREGORIAN);
-
-		UidGenerator ug = new RandomUidGenerator();
-
-		java.util.Calendar calendarStartTime = new GregorianCalendar();
-		java.util.TimeZone tz = calendarStartTime.getTimeZone();
-		ZoneId zid = tz.toZoneId();
-		ArrayList<VEvent> events = new ArrayList<>();
-
-		for (Shift s : dw) {
-			String summary = "";
-			if (s.getShiftNumberModifier().equalsIgnoreCase("!!!"))
-				summary = s.getLocation() + " " + s.getShiftNumberModifier() + s.getShiftNumber() + " ";
-			else
-				summary = s.getLocation() + " " + s.getShiftNumber() + " ";
-
-			long startDateTimeInMillis = s.getStartMillis();
-			long endDateTimeInMillis = s.getEndMillis();
-			/*LocalDateTime start = LocalDateTime.ofInstant(calendarStartTime.toInstant(), zid);
-			LocalDateTime end = LocalDateTime.ofInstant(Instant.ofEpochMilli(endDateTimeInMillis), zid);*/
-			/*Date start = new Date(startDateTimeInMillis);
-			Date end = new Date(endDateTimeInMillis);
-
-
-			VEvent event = new VEvent(start, end, summary);
-
-			Uid uid = ug.generateUid();
-			event.getProperties().add(uid);
-		}
-		Log.d(TAG, "Shift list size: " + dw.size());*/
-
-        ICalendar ical = new ICalendar();
-        if (!mondayShift.getShiftNumber().contains("R") || !mondayShift.getShiftNumber().contains("VL")) {
+    public String getCalendarICS() {
+        String ics = "";
+        ICalendar iCal = new ICalendar();
+        if (!mondayShift.getShiftNumber().equals("!!!")) {
 
             VEvent mondayEvent = new VEvent();
             Summary summary = mondayEvent.setSummary(mondayShift.getLocation() + " " + mondayShift.getShiftNumber());
-            summary.setLanguage("nl-nl");
+            summary.setLanguage("nl");
 
             Date start = mondayShift.getStartTime();
             mondayEvent.setDateStart(start);
@@ -811,10 +779,25 @@ public class DWReader {
             Duration duration = new Duration.Builder().hours(mondayShift.getLengthHours()).minutes(mondayShift.getLengthMinutes()).build();
             mondayEvent.setDuration(duration);
 
-            ical.addEvent(mondayEvent);
+            iCal.addEvent(mondayEvent);
+        }
+        if (!tuesdayShift.getShiftNumber().equals("!!!")) {
+
+            VEvent mondayEvent = new VEvent();
+            Summary summary = mondayEvent.setSummary(tuesdayShift.getLocation() + " " + tuesdayShift.getShiftNumber());
+            summary.setLanguage("nl");
+
+            Date start = tuesdayShift.getStartTime();
+            mondayEvent.setDateStart(start);
+
+            Duration duration = new Duration.Builder().hours(tuesdayShift.getLengthHours()).minutes(tuesdayShift.getLengthMinutes()).build();
+            mondayEvent.setDuration(duration);
+
+            iCal.addEvent(mondayEvent);
         }
 
-        String ics = Biweekly.write(ical).go();
+        ics += Biweekly.write(iCal).go();
+        return ics;
 
     }
 
@@ -834,8 +817,6 @@ public class DWReader {
         Log.d(TAG, "Using file: " + uri.getPath());
         readFile(uri, c);
         processFile(context);
-        //setCalendarItems();
-
     }
 
     public String fullFileString() {
