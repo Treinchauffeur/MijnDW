@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 import biweekly.Biweekly;
 import biweekly.ICalendar;
 import biweekly.component.VEvent;
+import biweekly.property.Description;
 import biweekly.property.Summary;
 import biweekly.util.Duration;
 
@@ -41,7 +42,7 @@ public class DWReader {
     public static Uri toRead;
     public static String icsString;
     @SuppressLint("SimpleDateFormat")
-    static SimpleDateFormat sdf = new SimpleDateFormat("dd-mm-yyyy HH:mm");
+    static SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm");
 
     private static final ArrayList<Shift> dw = new ArrayList<>();
     private static final Shift mondayShift = new Shift();
@@ -56,38 +57,6 @@ public class DWReader {
 
     public DWReader(Context context) {
         this.context = context;
-    }
-
-    /**
-     * Reads the given file Uri & saves the contents to a String array.
-     *
-     * @param uri User-supplied file
-     * @param c   context to use to create inputstream
-     */
-    private static void readFile(Uri uri, Context c) {
-        try {
-            InputStream inputStream = c.getContentResolver().openInputStream(uri);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-
-            fileContents[0] = reader.readLine(); //first line: Donderdagse Week van WW-YYYY
-            fileContents[1] = reader.readLine(); // Empty for formatting
-            fileContents[2] = reader.readLine(); //Staff number + name
-            fileContents[3] = reader.readLine(); //Empty again
-            fileContents[4] = reader.readLine(); //Table titles
-            fileContents[5] = reader.readLine(); //Table formatting
-            fileContents[6] = reader.readLine(); //Monday
-            fileContents[7] = reader.readLine(); //Tuesday
-            fileContents[8] = reader.readLine(); //Wednesday
-            fileContents[9] = reader.readLine(); //Thursday
-            fileContents[10] = reader.readLine(); //Friday
-            fileContents[11] = reader.readLine(); //Saturday
-            fileContents[12] = reader.readLine(); //Sunday
-
-            reader.close();
-            Log.d(TAG, fileContents[12]);
-        } catch (IOException e) {
-            Log.e(TAG, "readFile: ", e);
-        }
     }
 
     /**
@@ -158,13 +127,11 @@ public class DWReader {
             String mondayLine = fileContents[6].replaceAll("\\s+", " ");
             String mondayModifier = "-1";
             String[] mondayArray = mondayLine.split(" ");
+
+            //Check if we have modifiers
             if (mondayArray[2].equals("!") || mondayArray[2].equals("@") || mondayArray[2].equals(">")
                     || mondayArray[2].equals("<") || mondayArray[2].equals("*") || mondayArray[2].equals("?")
-                    || mondayArray[2].equals("E") || mondayArray[2].equals("#") || mondayArray[2].equals("$")) { // Check
-                // if
-                // we
-                // have
-                // modifiers
+                    || mondayArray[2].equals("E") || mondayArray[2].equals("#") || mondayArray[2].equals("$")) {
                 mondayModifier = mondayArray[2];
                 for (int i = 2; i < mondayArray.length - 1; i++) { // If so, get rid of them but save them. They mess
                     // things up later on
@@ -758,10 +725,61 @@ public class DWReader {
 
             Log.d(TAG, "Finished scanning " + toRead.getPath());
         } catch (ParseException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
+    }
+
+    /**
+     * Reads the given file Uri & saves the contents to a String array.
+     *
+     * @param uri User-supplied file
+     * @param c   context to use to create inputstream
+     */
+    private static void readFile(Uri uri, Context c) {
+        try {
+            InputStream inputStream = c.getContentResolver().openInputStream(uri);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+
+            fileContents[0] = reader.readLine(); //first line: Donderdagse Week van WW-YYYY
+            fileContents[1] = reader.readLine(); // Empty for formatting
+            fileContents[2] = reader.readLine(); //Staff number + name
+            fileContents[3] = reader.readLine(); //Empty again
+            fileContents[4] = reader.readLine(); //Table titles
+            fileContents[5] = reader.readLine(); //Table formatting
+            fileContents[6] = reader.readLine(); //Monday
+            fileContents[7] = reader.readLine(); //Tuesday
+            fileContents[8] = reader.readLine(); //Wednesday
+            fileContents[9] = reader.readLine(); //Thursday
+            fileContents[10] = reader.readLine(); //Friday
+            fileContents[11] = reader.readLine(); //Saturday
+            fileContents[12] = reader.readLine(); //Sunday
+
+            reader.close();
+            Log.d(TAG, fileContents[12]);
+        } catch (IOException e) {
+            Log.e(TAG, "readFile: ", e);
+        }
+    }
+
+    /**
+     * Initiates the conversion of the DW file & acting as a staging method.
+     *
+     * @param c   context
+     * @param uri user-supplied file
+     */
+    public void startConversion(Context c, Uri uri) {
+        Log.d(TAG, "started reading file: ");
+        toRead = uri;
+
+        if (toRead == null) {
+            Log.e(TAG, "No valid DW files were present to read.");
+            return;
+        }
+
+        Log.d(TAG, "Using file: " + uri.getPath());
+        readFile(uri, c);
+        processFile(context);
     }
 
     public String getCalendarICS() {
@@ -770,7 +788,12 @@ public class DWReader {
         if (!mondayShift.getShiftNumber().equals("!!!")) {
 
             VEvent mondayEvent = new VEvent();
-            Summary summary = mondayEvent.setSummary(mondayShift.getLocation() + " " + mondayShift.getShiftNumber());
+            String summaryString = mondayShift.getShiftNumberModifier().equals("-1") ?
+                    mondayShift.getLocation() + " " + mondayShift.getShiftNumber() :
+                    mondayShift.getLocation() + " " + mondayShift.getShiftNumberModifier() + mondayShift.getShiftNumber();
+            Summary summary = mondayEvent.setSummary(summaryString);
+            Description description = mondayEvent.setDescription(fileContents[6]);
+            description.setLanguage("nl");
             summary.setLanguage("nl");
 
             Date start = mondayShift.getStartTime();
@@ -783,17 +806,117 @@ public class DWReader {
         }
         if (!tuesdayShift.getShiftNumber().equals("!!!")) {
 
-            VEvent mondayEvent = new VEvent();
-            Summary summary = mondayEvent.setSummary(tuesdayShift.getLocation() + " " + tuesdayShift.getShiftNumber());
+            VEvent tuesdayEvent = new VEvent();
+            String summaryString = tuesdayShift.getShiftNumberModifier().equals("-1") ?
+                    tuesdayShift.getLocation() + " " + tuesdayShift.getShiftNumber() :
+                    tuesdayShift.getLocation() + " " + tuesdayShift.getShiftNumberModifier() + tuesdayShift.getShiftNumber();
+            Summary summary = tuesdayEvent.setSummary(summaryString);
+            Description description = tuesdayEvent.setDescription(fileContents[7]);
+            description.setLanguage("nl");
             summary.setLanguage("nl");
 
             Date start = tuesdayShift.getStartTime();
-            mondayEvent.setDateStart(start);
+            tuesdayEvent.setDateStart(start);
 
             Duration duration = new Duration.Builder().hours(tuesdayShift.getLengthHours()).minutes(tuesdayShift.getLengthMinutes()).build();
-            mondayEvent.setDuration(duration);
+            tuesdayEvent.setDuration(duration);
 
-            iCal.addEvent(mondayEvent);
+            iCal.addEvent(tuesdayEvent);
+        }
+        if (!wednesdayShift.getShiftNumber().equals("!!!")) {
+
+            VEvent wednesdayEvent = new VEvent();
+            String summaryString = wednesdayShift.getShiftNumberModifier().equals("-1") ?
+                    wednesdayShift.getLocation() + " " + wednesdayShift.getShiftNumber() :
+                    wednesdayShift.getLocation() + " " + wednesdayShift.getShiftNumberModifier() + wednesdayShift.getShiftNumber();
+            Summary summary = wednesdayEvent.setSummary(summaryString);
+            Description description = wednesdayEvent.setDescription(fileContents[8]);
+            description.setLanguage("nl");
+            summary.setLanguage("nl");
+
+            Date start = wednesdayShift.getStartTime();
+            wednesdayEvent.setDateStart(start);
+
+            Duration duration = new Duration.Builder().hours(wednesdayShift.getLengthHours()).minutes(wednesdayShift.getLengthMinutes()).build();
+            wednesdayEvent.setDuration(duration);
+
+            iCal.addEvent(wednesdayEvent);
+        }
+        if (!thursdayShift.getShiftNumber().equals("!!!")) {
+
+            VEvent thursdayEvent = new VEvent();
+            String summaryString = thursdayShift.getShiftNumberModifier().equals("-1") ?
+                    thursdayShift.getLocation() + " " + thursdayShift.getShiftNumber() :
+                    thursdayShift.getLocation() + " " + thursdayShift.getShiftNumberModifier() + thursdayShift.getShiftNumber();
+            Summary summary = thursdayEvent.setSummary(summaryString);
+            Description description = thursdayEvent.setDescription(fileContents[9]);
+            description.setLanguage("nl");
+            summary.setLanguage("nl");
+
+            Date start = thursdayShift.getStartTime();
+            thursdayEvent.setDateStart(start);
+
+            Duration duration = new Duration.Builder().hours(thursdayShift.getLengthHours()).minutes(thursdayShift.getLengthMinutes()).build();
+            thursdayEvent.setDuration(duration);
+
+            iCal.addEvent(thursdayEvent);
+        }
+        if (!fridayShift.getShiftNumber().equals("!!!")) {
+
+            VEvent fridayEvent = new VEvent();
+            String summaryString = fridayShift.getShiftNumberModifier().equals("-1") ?
+                    fridayShift.getLocation() + " " + fridayShift.getShiftNumber() :
+                    fridayShift.getLocation() + " " + fridayShift.getShiftNumberModifier() + fridayShift.getShiftNumber();
+            Summary summary = fridayEvent.setSummary(summaryString);
+            Description description = fridayEvent.setDescription(fileContents[10]);
+            description.setLanguage("nl");
+            summary.setLanguage("nl");
+
+            Date start = fridayShift.getStartTime();
+            fridayEvent.setDateStart(start);
+
+            Duration duration = new Duration.Builder().hours(fridayShift.getLengthHours()).minutes(fridayShift.getLengthMinutes()).build();
+            fridayEvent.setDuration(duration);
+
+            iCal.addEvent(fridayEvent);
+        }
+        if (!saturdayShift.getShiftNumber().equals("!!!")) {
+
+            VEvent saturdayEvent = new VEvent();
+            String summaryString = saturdayShift.getShiftNumberModifier().equals("-1") ?
+                    saturdayShift.getLocation() + " " + saturdayShift.getShiftNumber() :
+                    saturdayShift.getLocation() + " " + saturdayShift.getShiftNumberModifier() + saturdayShift.getShiftNumber();
+            Summary summary = saturdayEvent.setSummary(summaryString);
+            Description description = saturdayEvent.setDescription(fileContents[11]);
+            description.setLanguage("nl");
+            summary.setLanguage("nl");
+
+            Date start = saturdayShift.getStartTime();
+            saturdayEvent.setDateStart(start);
+
+            Duration duration = new Duration.Builder().hours(saturdayShift.getLengthHours()).minutes(saturdayShift.getLengthMinutes()).build();
+            saturdayEvent.setDuration(duration);
+
+            iCal.addEvent(saturdayEvent);
+        }
+        if (!sundayShift.getShiftNumber().equals("!!!")) {
+
+            VEvent sundayEvent = new VEvent();
+            String summaryString = sundayShift.getShiftNumberModifier().equals("-1") ?
+                    sundayShift.getLocation() + " " + sundayShift.getShiftNumber() :
+                    sundayShift.getLocation() + " " + sundayShift.getShiftNumberModifier() + sundayShift.getShiftNumber();
+            Summary summary = sundayEvent.setSummary(summaryString);
+            Description description = sundayEvent.setDescription(fileContents[12]);
+            description.setLanguage("nl");
+            summary.setLanguage("nl");
+
+            Date start = sundayShift.getStartTime();
+            sundayEvent.setDateStart(start);
+
+            Duration duration = new Duration.Builder().hours(sundayShift.getLengthHours()).minutes(sundayShift.getLengthMinutes()).build();
+            sundayEvent.setDuration(duration);
+
+            iCal.addEvent(sundayEvent);
         }
 
         ics += Biweekly.write(iCal).go();
@@ -801,28 +924,10 @@ public class DWReader {
 
     }
 
-    /**
-     * Initiates the conversion of the DW file & acting as a staging method.
-     *
-     * @param c   context
-     * @param uri user-supplied file
-     */
-    public void startConversion(Context c, Uri uri) {
-        Log.d(TAG, "started reading file: ");
-        toRead = uri;
-        if (toRead == null) {
-            Log.e(TAG, "No valid DW files were present to read.");
-            return;
-        }
-        Log.d(TAG, "Using file: " + uri.getPath());
-        readFile(uri, c);
-        processFile(context);
-    }
-
     public String fullFileString() {
         String str = "";
-        for (int i = 0; i < fileContents.length; i++) {
-            str += fileContents[i] + "\n";
+        for (String fileContent : fileContents) {
+            str += fileContent + "\n";
         }
         return str;
     }
