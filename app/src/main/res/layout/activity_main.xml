@@ -1,16 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity"
-    android:layout_margin="20dp">
+    android:layout_margin="20dp"
+    android:gravity="center_horizontal"
+    android:orientation="vertical">
 
-    <Button
-        android:id="@+id/btnLoadFile"
+    <TextView
+        android:id="@+id/loadedStatus"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Load file"/>
+        android:text="No file is loaded:" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnLoadFile"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:text="Load file" />
+
+    <EditText
+        android:id="@+id/dwContent"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:layout_marginTop="10dp"
+        android:background="#22000000"
+        android:enabled="false"
+        android:visibility="gone" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnConvertFile"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:layout_marginTop="10dp"
+        android:text="Convert to iCal"
+        android:visibility="gone" />
 
 </LinearLayout>

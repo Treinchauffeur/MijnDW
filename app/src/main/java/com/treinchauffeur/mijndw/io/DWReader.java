@@ -4,14 +4,12 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
+import android.widget.Toast;
 
-import com.treinchauffeur.mijndw.misc.Logger;
-import com.treinchauffeur.mijndw.misc.Settings;
 import com.treinchauffeur.mijndw.obj.Shift;
 import com.treinchauffeur.mijndw.obj.Staff;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -19,8 +17,14 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Scanner;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
+
+import biweekly.Biweekly;
+import biweekly.ICalendar;
+import biweekly.component.VEvent;
+import biweekly.property.Summary;
+import biweekly.util.Duration;
 
 
 /**
@@ -47,26 +51,21 @@ public class DWReader {
     private static final Shift saturdayShift = new Shift();
     private static final Shift sundayShift = new Shift();
     private static final Staff staff = new Staff();
-    private static Context context;
+    public Context context;
 
-    public static void startConversion(Context c, Uri uri) {
-        Log.d(TAG, "started reading file: ");
-        context = c;
-        toRead = uri;
-        if (toRead == null) {
-            Log.e(TAG, "No valid DW files were present to read.");
-            return;
-        }
-        Log.d(TAG, "Using file: " + uri.getPath());
-        readFile(uri);
-        processFile();
-        //setCalendarItems();
-
+    public DWReader(Context context) {
+        this.context = context;
     }
 
-    private static void readFile(Uri uri) {
+    /**
+     * Reads the given file Uri & saves the contents to a String array.
+     *
+     * @param uri User-supplied file
+     * @param c   context to use to create inputstream
+     */
+    private static void readFile(Uri uri, Context c) {
         try {
-            InputStream inputStream = context.getContentResolver().openInputStream(uri);
+            InputStream inputStream = c.getContentResolver().openInputStream(uri);
             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
 
             fileContents[0] = reader.readLine(); //first line: Donderdagse Week van WW-YYYY
@@ -96,10 +95,12 @@ public class DWReader {
      * Line indexing: 0=days in text, 1=date in 31-12 format, 2=shift
      * number/letters, 3=starttime formatted to 24:60, 4=endtime formatted
      * to 24:60, 5=profession, 6=location
+     *
+     * @param context
      */
 
     @SuppressWarnings("deprecation")
-    private static void processFile() {
+    private static void processFile(Context context) {
         int staffNumber = -1, weekNumber = -1, yearNumber = -1;
         SimpleDateFormat format = new SimpleDateFormat("HH:mm");
         java.util.Date date1;
@@ -752,6 +753,8 @@ public class DWReader {
 
             Log.d(TAG, "//////////// END OF WEEK ////////////");
 
+            Toast.makeText(context, "DW geladen: week " + weekNumber + " van " + yearNumber, Toast.LENGTH_SHORT).show();
+
             Log.d(TAG, "Finished scanning " + toRead.getPath());
         } catch (ParseException e) {
             // TODO Auto-generated catch block
@@ -795,5 +798,51 @@ public class DWReader {
 		}
 		Log.d(TAG, "Shift list size: " + dw.size());*/
 
+        ICalendar ical = new ICalendar();
+        if (!mondayShift.getShiftNumber().contains("R") || !mondayShift.getShiftNumber().contains("VL")) {
+
+            VEvent mondayEvent = new VEvent();
+            Summary summary = mondayEvent.setSummary(mondayShift.getLocation() + " " + mondayShift.getShiftNumber());
+            summary.setLanguage("nl-nl");
+
+            Date start = mondayShift.getStartTime();
+            mondayEvent.setDateStart(start);
+
+            Duration duration = new Duration.Builder().hours(mondayShift.getLengthHours()).minutes(mondayShift.getLengthMinutes()).build();
+            mondayEvent.setDuration(duration);
+
+            ical.addEvent(mondayEvent);
+        }
+
+        String ics = Biweekly.write(ical).go();
+
+    }
+
+    /**
+     * Initiates the conversion of the DW file & acting as a staging method.
+     *
+     * @param c   context
+     * @param uri user-supplied file
+     */
+    public void startConversion(Context c, Uri uri) {
+        Log.d(TAG, "started reading file: ");
+        toRead = uri;
+        if (toRead == null) {
+            Log.e(TAG, "No valid DW files were present to read.");
+            return;
+        }
+        Log.d(TAG, "Using file: " + uri.getPath());
+        readFile(uri, c);
+        processFile(context);
+        //setCalendarItems();
+
+    }
+
+    public String fullFileString() {
+        String str = "";
+        for (int i = 0; i < fileContents.length; i++) {
+            str += fileContents[i] + "\n";
+        }
+        return str;
     }
 }
