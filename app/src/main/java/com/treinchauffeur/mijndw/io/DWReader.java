@@ -2,10 +2,13 @@ package com.treinchauffeur.mijndw.io;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.treinchauffeur.mijndw.R;
+import com.treinchauffeur.mijndw.misc.Utils;
 import com.treinchauffeur.mijndw.obj.Shift;
 import com.treinchauffeur.mijndw.obj.Staff;
 
@@ -40,11 +43,11 @@ public class DWReader {
     private static final String[] fileContents = new String[13];
     private static final String TAG = "Run";
     public static Uri toRead;
-    public static String icsString;
     @SuppressLint("SimpleDateFormat")
     static SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+    public static int staffNumber = -1, weekNumber = -1, yearNumber = -1;
 
-    private static final ArrayList<Shift> dw = new ArrayList<>();
+    public static ArrayList<Shift> dw = new ArrayList<>();
     private static final Shift mondayShift = new Shift();
     private static final Shift tuesdayShift = new Shift();
     private static final Shift wednesdayShift = new Shift();
@@ -71,7 +74,6 @@ public class DWReader {
 
     @SuppressWarnings("deprecation")
     private static void processFile(Context context) {
-        int staffNumber = -1, weekNumber = -1, yearNumber = -1;
         SimpleDateFormat format = new SimpleDateFormat("HH:mm");
         java.util.Date date1;
         java.util.Date date2;
@@ -82,7 +84,7 @@ public class DWReader {
         long diffHours;
         long minutes;
         try {
-            // Defining scanner
+            dw.clear();
 
             // First line - weeknumber + year
             String startingLine = fileContents[0].replaceAll("\\s+", " ");
@@ -131,7 +133,7 @@ public class DWReader {
             //Check if we have modifiers
             if (mondayArray[2].equals("!") || mondayArray[2].equals("@") || mondayArray[2].equals(">")
                     || mondayArray[2].equals("<") || mondayArray[2].equals("*") || mondayArray[2].equals("?")
-                    || mondayArray[2].equals("E") || mondayArray[2].equals("#") || mondayArray[2].equals("$")) {
+                    || mondayArray[2].equals("E") || mondayArray[2].equals("#") || mondayArray[2].equals("$") || mondayArray[2].equals("%")) {
                 mondayModifier = mondayArray[2];
                 for (int i = 2; i < mondayArray.length - 1; i++) { // If so, get rid of them but save them. They mess
                     // things up later on
@@ -227,7 +229,7 @@ public class DWReader {
             String[] tuesdayArray = tuesdayLine.split(" ");
             if (tuesdayArray[2].equals("!") || tuesdayArray[2].equals("@") || tuesdayArray[2].equals(">")
                     || tuesdayArray[2].equals("<") || tuesdayArray[2].equals("*") || tuesdayArray[2].equals("?")
-                    || tuesdayArray[2].equals("E") || tuesdayArray[2].equals("#") || tuesdayArray[2].equals("$")) { // Check
+                    || tuesdayArray[2].equals("E") || tuesdayArray[2].equals("#") || tuesdayArray[2].equals("$") || tuesdayArray[2].equals("%")) { // Check
                 // if
                 // we
                 // have
@@ -312,7 +314,7 @@ public class DWReader {
             if (wednesdayArray[2].equals("!") || wednesdayArray[2].equals("@") || wednesdayArray[2].equals(">")
                     || wednesdayArray[2].equals("<") || wednesdayArray[2].equals("*") || wednesdayArray[2].equals("?")
                     || wednesdayArray[2].equals("E") || wednesdayArray[2].equals("#")
-                    || wednesdayArray[2].equals("$")) { // Check if we have modifiers
+                    || wednesdayArray[2].equals("$") || wednesdayArray[2].equals("%")) { // Check if we have modifiers
                 wednesdayModifier = wednesdayArray[2];
                 for (int i = 2; i < wednesdayArray.length - 1; i++) { // If so, get rid of them but save them. They mess
                     // things up later on
@@ -391,7 +393,7 @@ public class DWReader {
             String[] thursdayArray = thursdayLine.split(" ");
             if (thursdayArray[2].equals("!") || thursdayArray[2].equals("@") || thursdayArray[2].equals(">")
                     || thursdayArray[2].equals("<") || thursdayArray[2].equals("*") || thursdayArray[2].equals("?")
-                    || thursdayArray[2].equals("E") || thursdayArray[2].equals("#") || thursdayArray[2].equals("$")) { // Check
+                    || thursdayArray[2].equals("E") || thursdayArray[2].equals("#") || thursdayArray[2].equals("$") || thursdayArray[2].equals("%")) { // Check
                 // if
                 // we
                 // have
@@ -474,7 +476,7 @@ public class DWReader {
             String[] fridayArray = fridayLine.split(" ");
             if (fridayArray[2].equals("!") || fridayArray[2].equals("@") || fridayArray[2].equals(">")
                     || fridayArray[2].equals("<") || fridayArray[2].equals("*") || fridayArray[2].equals("?")
-                    || fridayArray[2].equals("E") || fridayArray[2].equals("#") || fridayArray[2].equals("$")) { // Check
+                    || fridayArray[2].equals("E") || fridayArray[2].equals("#") || fridayArray[2].equals("$") || fridayArray[2].equals("%")) { // Check
                 // if
                 // we
                 // have
@@ -558,7 +560,7 @@ public class DWReader {
             String[] saturdayArray = saturdayLine.split(" ");
             if (saturdayArray[2].equals("!") || saturdayArray[2].equals("@") || saturdayArray[2].equals(">")
                     || saturdayArray[2].equals("<") || saturdayArray[2].equals("*") || saturdayArray[2].equals("?")
-                    || saturdayArray[2].equals("E") || saturdayArray[2].equals("#") || saturdayArray[2].equals("$")) { // Check
+                    || saturdayArray[2].equals("E") || saturdayArray[2].equals("#") || saturdayArray[2].equals("$") || saturdayArray[2].equals("%")) { // Check
                 // if
                 // we
                 // have
@@ -641,7 +643,7 @@ public class DWReader {
             String[] sundayArray = sundayLine.split(" ");
             if (sundayArray[2].equals("!") || sundayArray[2].equals("@") || sundayArray[2].equals(">")
                     || sundayArray[2].equals("<") || sundayArray[2].equals("*") || sundayArray[2].equals("?")
-                    || sundayArray[2].equals("E") || sundayArray[2].equals("#") || sundayArray[2].equals("$")) { // Check
+                    || sundayArray[2].equals("E") || sundayArray[2].equals("#") || sundayArray[2].equals("$") || sundayArray[2].equals("%")) { // Check
                 // if
                 // we
                 // have
@@ -783,28 +785,39 @@ public class DWReader {
     }
 
     /**
-     * Puts all the shift details from their respective objects in to an iCalendar String using iWeekly.
+     * Puts all the shift details from their respective objects in to an iCalendar String using biWeekly.
      *
      * @return the full, completed iCalendar String.
      */
     public String getCalendarICS() {
+        SharedPreferences prefs = context.getSharedPreferences(context.getString(R.string.sharedPrefs), Context.MODE_PRIVATE);
+        boolean displayModifiers = prefs.getBoolean("displayModifiers", true);
+        boolean fullDaysOnly = prefs.getBoolean("fullDaysOnly", false);
+
         String ics = "";
         ICalendar iCal = new ICalendar();
         if (!mondayShift.getShiftNumber().equals("!!!")) {
 
             VEvent mondayEvent = new VEvent();
-            String summaryString = mondayShift.getShiftNumberModifier().equals("-1") ?
-                    mondayShift.getLocation() + " " + mondayShift.getShiftNumber() :
-                    mondayShift.getLocation() + " " + mondayShift.getShiftNumberModifier() + mondayShift.getShiftNumber();
+            String summaryString;
+            if (displayModifiers)
+                summaryString = mondayShift.getShiftNumberModifier().equals("-1") ?
+                        mondayShift.getLocation() + " " + mondayShift.getShiftNumber() :
+                        mondayShift.getLocation() + " " + mondayShift.getShiftNumberModifier() + mondayShift.getShiftNumber();
+            else summaryString = mondayShift.getLocation() + " " + mondayShift.getShiftNumber();
             Summary summary = mondayEvent.setSummary(summaryString);
+
             Description description = mondayEvent.setDescription(fileContents[6]);
             description.setLanguage("nl");
             summary.setLanguage("nl");
 
             Date start = mondayShift.getStartTime();
-            mondayEvent.setDateStart(start);
+            if (fullDaysOnly) mondayEvent.setDateStart(Utils.atStartOfDay(start));
+            else mondayEvent.setDateStart(start);
 
-            Duration duration = new Duration.Builder().hours(mondayShift.getLengthHours()).minutes(mondayShift.getLengthMinutes()).build();
+            Duration duration = fullDaysOnly ?
+                    new Duration.Builder().days(1).build() :
+                    new Duration.Builder().hours(mondayShift.getLengthHours()).minutes(mondayShift.getLengthMinutes()).build();
             mondayEvent.setDuration(duration);
 
             iCal.addEvent(mondayEvent);
@@ -812,18 +825,25 @@ public class DWReader {
         if (!tuesdayShift.getShiftNumber().equals("!!!")) {
 
             VEvent tuesdayEvent = new VEvent();
-            String summaryString = tuesdayShift.getShiftNumberModifier().equals("-1") ?
-                    tuesdayShift.getLocation() + " " + tuesdayShift.getShiftNumber() :
-                    tuesdayShift.getLocation() + " " + tuesdayShift.getShiftNumberModifier() + tuesdayShift.getShiftNumber();
+            String summaryString;
+            if (displayModifiers)
+                summaryString = tuesdayShift.getShiftNumberModifier().equals("-1") ?
+                        tuesdayShift.getLocation() + " " + tuesdayShift.getShiftNumber() :
+                        tuesdayShift.getLocation() + " " + tuesdayShift.getShiftNumberModifier() + tuesdayShift.getShiftNumber();
+            else summaryString = tuesdayShift.getLocation() + " " + tuesdayShift.getShiftNumber();
             Summary summary = tuesdayEvent.setSummary(summaryString);
+
             Description description = tuesdayEvent.setDescription(fileContents[7]);
             description.setLanguage("nl");
             summary.setLanguage("nl");
 
             Date start = tuesdayShift.getStartTime();
-            tuesdayEvent.setDateStart(start);
+            if (fullDaysOnly) tuesdayEvent.setDateStart(Utils.atStartOfDay(start));
+            else tuesdayEvent.setDateStart(start);
 
-            Duration duration = new Duration.Builder().hours(tuesdayShift.getLengthHours()).minutes(tuesdayShift.getLengthMinutes()).build();
+            Duration duration = fullDaysOnly ?
+                    new Duration.Builder().days(1).build() :
+                    new Duration.Builder().hours(tuesdayShift.getLengthHours()).minutes(tuesdayShift.getLengthMinutes()).build();
             tuesdayEvent.setDuration(duration);
 
             iCal.addEvent(tuesdayEvent);
@@ -831,18 +851,26 @@ public class DWReader {
         if (!wednesdayShift.getShiftNumber().equals("!!!")) {
 
             VEvent wednesdayEvent = new VEvent();
-            String summaryString = wednesdayShift.getShiftNumberModifier().equals("-1") ?
-                    wednesdayShift.getLocation() + " " + wednesdayShift.getShiftNumber() :
-                    wednesdayShift.getLocation() + " " + wednesdayShift.getShiftNumberModifier() + wednesdayShift.getShiftNumber();
+            String summaryString;
+            if (displayModifiers)
+                summaryString = wednesdayShift.getShiftNumberModifier().equals("-1") ?
+                        wednesdayShift.getLocation() + " " + wednesdayShift.getShiftNumber() :
+                        wednesdayShift.getLocation() + " " + wednesdayShift.getShiftNumberModifier() + wednesdayShift.getShiftNumber();
+            else
+                summaryString = wednesdayShift.getLocation() + " " + wednesdayShift.getShiftNumber();
             Summary summary = wednesdayEvent.setSummary(summaryString);
+
             Description description = wednesdayEvent.setDescription(fileContents[8]);
             description.setLanguage("nl");
             summary.setLanguage("nl");
 
             Date start = wednesdayShift.getStartTime();
-            wednesdayEvent.setDateStart(start);
+            if (fullDaysOnly) wednesdayEvent.setDateStart(Utils.atStartOfDay(start));
+            else wednesdayEvent.setDateStart(start);
 
-            Duration duration = new Duration.Builder().hours(wednesdayShift.getLengthHours()).minutes(wednesdayShift.getLengthMinutes()).build();
+            Duration duration = fullDaysOnly ?
+                    new Duration.Builder().days(1).build() :
+                    new Duration.Builder().hours(wednesdayShift.getLengthHours()).minutes(wednesdayShift.getLengthMinutes()).build();
             wednesdayEvent.setDuration(duration);
 
             iCal.addEvent(wednesdayEvent);
@@ -850,18 +878,25 @@ public class DWReader {
         if (!thursdayShift.getShiftNumber().equals("!!!")) {
 
             VEvent thursdayEvent = new VEvent();
-            String summaryString = thursdayShift.getShiftNumberModifier().equals("-1") ?
-                    thursdayShift.getLocation() + " " + thursdayShift.getShiftNumber() :
-                    thursdayShift.getLocation() + " " + thursdayShift.getShiftNumberModifier() + thursdayShift.getShiftNumber();
+            String summaryString;
+            if (displayModifiers)
+                summaryString = thursdayShift.getShiftNumberModifier().equals("-1") ?
+                        thursdayShift.getLocation() + " " + thursdayShift.getShiftNumber() :
+                        thursdayShift.getLocation() + " " + thursdayShift.getShiftNumberModifier() + thursdayShift.getShiftNumber();
+            else summaryString = thursdayShift.getLocation() + " " + thursdayShift.getShiftNumber();
             Summary summary = thursdayEvent.setSummary(summaryString);
+
             Description description = thursdayEvent.setDescription(fileContents[9]);
             description.setLanguage("nl");
             summary.setLanguage("nl");
 
             Date start = thursdayShift.getStartTime();
-            thursdayEvent.setDateStart(start);
+            if (fullDaysOnly) thursdayEvent.setDateStart(Utils.atStartOfDay(start));
+            else thursdayEvent.setDateStart(start);
 
-            Duration duration = new Duration.Builder().hours(thursdayShift.getLengthHours()).minutes(thursdayShift.getLengthMinutes()).build();
+            Duration duration = fullDaysOnly ?
+                    new Duration.Builder().days(1).build() :
+                    new Duration.Builder().hours(thursdayShift.getLengthHours()).minutes(thursdayShift.getLengthMinutes()).build();
             thursdayEvent.setDuration(duration);
 
             iCal.addEvent(thursdayEvent);
@@ -869,18 +904,25 @@ public class DWReader {
         if (!fridayShift.getShiftNumber().equals("!!!")) {
 
             VEvent fridayEvent = new VEvent();
-            String summaryString = fridayShift.getShiftNumberModifier().equals("-1") ?
-                    fridayShift.getLocation() + " " + fridayShift.getShiftNumber() :
-                    fridayShift.getLocation() + " " + fridayShift.getShiftNumberModifier() + fridayShift.getShiftNumber();
+            String summaryString;
+            if (displayModifiers)
+                summaryString = fridayShift.getShiftNumberModifier().equals("-1") ?
+                        fridayShift.getLocation() + " " + fridayShift.getShiftNumber() :
+                        fridayShift.getLocation() + " " + fridayShift.getShiftNumberModifier() + fridayShift.getShiftNumber();
+            else summaryString = fridayShift.getLocation() + " " + fridayShift.getShiftNumber();
             Summary summary = fridayEvent.setSummary(summaryString);
+
             Description description = fridayEvent.setDescription(fileContents[10]);
             description.setLanguage("nl");
             summary.setLanguage("nl");
 
             Date start = fridayShift.getStartTime();
-            fridayEvent.setDateStart(start);
+            if (fullDaysOnly) fridayEvent.setDateStart(Utils.atStartOfDay(start));
+            else fridayEvent.setDateStart(start);
 
-            Duration duration = new Duration.Builder().hours(fridayShift.getLengthHours()).minutes(fridayShift.getLengthMinutes()).build();
+            Duration duration = fullDaysOnly ?
+                    new Duration.Builder().days(1).build() :
+                    new Duration.Builder().hours(fridayShift.getLengthHours()).minutes(fridayShift.getLengthMinutes()).build();
             fridayEvent.setDuration(duration);
 
             iCal.addEvent(fridayEvent);
@@ -888,18 +930,25 @@ public class DWReader {
         if (!saturdayShift.getShiftNumber().equals("!!!")) {
 
             VEvent saturdayEvent = new VEvent();
-            String summaryString = saturdayShift.getShiftNumberModifier().equals("-1") ?
-                    saturdayShift.getLocation() + " " + saturdayShift.getShiftNumber() :
-                    saturdayShift.getLocation() + " " + saturdayShift.getShiftNumberModifier() + saturdayShift.getShiftNumber();
+            String summaryString;
+            if (displayModifiers)
+                summaryString = saturdayShift.getShiftNumberModifier().equals("-1") ?
+                        saturdayShift.getLocation() + " " + saturdayShift.getShiftNumber() :
+                        saturdayShift.getLocation() + " " + saturdayShift.getShiftNumberModifier() + saturdayShift.getShiftNumber();
+            else summaryString = saturdayShift.getLocation() + " " + saturdayShift.getShiftNumber();
             Summary summary = saturdayEvent.setSummary(summaryString);
+
             Description description = saturdayEvent.setDescription(fileContents[11]);
             description.setLanguage("nl");
             summary.setLanguage("nl");
 
             Date start = saturdayShift.getStartTime();
-            saturdayEvent.setDateStart(start);
+            if (fullDaysOnly) saturdayEvent.setDateStart(Utils.atStartOfDay(start));
+            else saturdayEvent.setDateStart(start);
 
-            Duration duration = new Duration.Builder().hours(saturdayShift.getLengthHours()).minutes(saturdayShift.getLengthMinutes()).build();
+            Duration duration = fullDaysOnly ?
+                    new Duration.Builder().days(1).build() :
+                    new Duration.Builder().hours(saturdayShift.getLengthHours()).minutes(saturdayShift.getLengthMinutes()).build();
             saturdayEvent.setDuration(duration);
 
             iCal.addEvent(saturdayEvent);
@@ -907,18 +956,25 @@ public class DWReader {
         if (!sundayShift.getShiftNumber().equals("!!!")) {
 
             VEvent sundayEvent = new VEvent();
-            String summaryString = sundayShift.getShiftNumberModifier().equals("-1") ?
-                    sundayShift.getLocation() + " " + sundayShift.getShiftNumber() :
-                    sundayShift.getLocation() + " " + sundayShift.getShiftNumberModifier() + sundayShift.getShiftNumber();
+            String summaryString;
+            if (displayModifiers)
+                summaryString = sundayShift.getShiftNumberModifier().equals("-1") ?
+                        sundayShift.getLocation() + " " + sundayShift.getShiftNumber() :
+                        sundayShift.getLocation() + " " + sundayShift.getShiftNumberModifier() + sundayShift.getShiftNumber();
+            else summaryString = sundayShift.getLocation() + " " + sundayShift.getShiftNumber();
             Summary summary = sundayEvent.setSummary(summaryString);
+
             Description description = sundayEvent.setDescription(fileContents[12]);
             description.setLanguage("nl");
             summary.setLanguage("nl");
 
             Date start = sundayShift.getStartTime();
-            sundayEvent.setDateStart(start);
+            if (fullDaysOnly) sundayEvent.setDateStart(Utils.atStartOfDay(start));
+            else sundayEvent.setDateStart(start);
 
-            Duration duration = new Duration.Builder().hours(sundayShift.getLengthHours()).minutes(sundayShift.getLengthMinutes()).build();
+            Duration duration = fullDaysOnly ?
+                    new Duration.Builder().days(1).build() :
+                    new Duration.Builder().hours(sundayShift.getLengthHours()).minutes(sundayShift.getLengthMinutes()).build();
             sundayEvent.setDuration(duration);
 
             iCal.addEvent(sundayEvent);
