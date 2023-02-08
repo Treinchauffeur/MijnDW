@@ -10,5 +10,5 @@
     <string name="sharedPrefs">MIJN_DW_ALPHA</string>
     <string name="loadedSuccessDummyText">Week 52 van jaar 9999 geladen!</string>
     <string name="loadedError">Er is een fout opgetreden!</string>
-    <string name="loadTxtFile">Laad .txt bestand</string>
+    <string name="loadTxtFile">Selecteer .txt bestand</string>
 </resources>

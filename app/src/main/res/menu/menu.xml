@@ -3,5 +3,5 @@
     <item
         android:checkable="true"
         android:id="@+id/devMode"
-        android:title="Developer mode" />
+        android:title="Informatie voor ontwikkelaars" />
 </menu>

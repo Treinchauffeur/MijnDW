@@ -14,7 +14,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -25,6 +24,7 @@ import androidx.cardview.widget.CardView;
 import androidx.core.content.FileProvider;
 
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.materialswitch.MaterialSwitch;
 import com.treinchauffeur.mijndw.io.DWReader;
 
 import java.io.File;
@@ -44,7 +44,7 @@ public class MainActivity extends Activity {
     EditText dwContent, icsContent;
     TextView loadedNone, loadedSuccess, loadedError, devHint;
     CardView infoCard;
-    CheckBox showModifiers, fullDaysOnly;
+    MaterialSwitch showModifiers, fullDaysOnly;
     MaterialToolbar toolbar;
 
     @Override

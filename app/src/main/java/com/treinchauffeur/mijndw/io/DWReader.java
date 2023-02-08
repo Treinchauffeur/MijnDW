@@ -48,18 +48,84 @@ public class DWReader {
     public static int staffNumber = -1, weekNumber = -1, yearNumber = -1;
 
     public static ArrayList<Shift> dw = new ArrayList<>();
-    private static final Shift mondayShift = new Shift();
-    private static final Shift tuesdayShift = new Shift();
-    private static final Shift wednesdayShift = new Shift();
-    private static final Shift thursdayShift = new Shift();
-    private static final Shift fridayShift = new Shift();
-    private static final Shift saturdayShift = new Shift();
-    private static final Shift sundayShift = new Shift();
-    private static final Staff staff = new Staff();
+    private static Shift mondayShift = new Shift();
+    private static Shift tuesdayShift = new Shift();
+    private static Shift wednesdayShift = new Shift();
+    private static Shift thursdayShift = new Shift();
+    private static Shift fridayShift = new Shift();
+    private static Shift saturdayShift = new Shift();
+    private static Shift sundayShift = new Shift();
+    private static Staff staff = new Staff();
     public Context context;
 
     public DWReader(Context context) {
         this.context = context;
+    }
+
+    /**
+     * Initiates the conversion of the DW file & acting as a staging method.
+     *
+     * @param c   context
+     * @param uri user-supplied file
+     */
+    public void startConversion(Context c, Uri uri) {
+        resetShifts();
+        Log.d(TAG, "started reading file: ");
+        toRead = uri;
+
+        if (toRead == null) {
+            Log.e(TAG, "No valid DW files were present to read.");
+            return;
+        }
+
+        Log.d(TAG, "Using file: " + uri.getPath());
+        readFile(uri, c);
+        processFile(context);
+    }
+
+    /**
+     * Resets all the shifts to their default values, this is to counter the bug where shifts from different weeks were merged together
+     */
+    private void resetShifts() {
+        mondayShift = new Shift();
+        tuesdayShift = new Shift();
+        wednesdayShift = new Shift();
+        thursdayShift = new Shift();
+        fridayShift = new Shift();
+        saturdayShift = new Shift();
+        sundayShift = new Shift();
+    }
+
+    /**
+     * Reads the given file Uri & saves the contents to a String array.
+     *
+     * @param uri User-supplied file
+     * @param c   context to use to create inputstream
+     */
+    private static void readFile(Uri uri, Context c) {
+        try {
+            InputStream inputStream = c.getContentResolver().openInputStream(uri);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+
+            fileContents[0] = reader.readLine(); //first line: Donderdagse Week van WW-YYYY
+            fileContents[1] = reader.readLine(); // Empty for formatting
+            fileContents[2] = reader.readLine(); //Staff number + name
+            fileContents[3] = reader.readLine(); //Empty again
+            fileContents[4] = reader.readLine(); //Table titles
+            fileContents[5] = reader.readLine(); //Table formatting
+            fileContents[6] = reader.readLine(); //Monday
+            fileContents[7] = reader.readLine(); //Tuesday
+            fileContents[8] = reader.readLine(); //Wednesday
+            fileContents[9] = reader.readLine(); //Thursday
+            fileContents[10] = reader.readLine(); //Friday
+            fileContents[11] = reader.readLine(); //Saturday
+            fileContents[12] = reader.readLine(); //Sunday
+
+            reader.close();
+            Log.d(TAG, fileContents[12]);
+        } catch (IOException e) {
+            Log.e(TAG, "readFile: ", e);
+        }
     }
 
     /**
@@ -71,7 +137,6 @@ public class DWReader {
      *
      * @param context
      */
-
     @SuppressWarnings("deprecation")
     private static void processFile(Context context) {
         SimpleDateFormat format = new SimpleDateFormat("HH:mm");
@@ -730,58 +795,6 @@ public class DWReader {
             e.printStackTrace();
         }
 
-    }
-
-    /**
-     * Reads the given file Uri & saves the contents to a String array.
-     *
-     * @param uri User-supplied file
-     * @param c   context to use to create inputstream
-     */
-    private static void readFile(Uri uri, Context c) {
-        try {
-            InputStream inputStream = c.getContentResolver().openInputStream(uri);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-
-            fileContents[0] = reader.readLine(); //first line: Donderdagse Week van WW-YYYY
-            fileContents[1] = reader.readLine(); // Empty for formatting
-            fileContents[2] = reader.readLine(); //Staff number + name
-            fileContents[3] = reader.readLine(); //Empty again
-            fileContents[4] = reader.readLine(); //Table titles
-            fileContents[5] = reader.readLine(); //Table formatting
-            fileContents[6] = reader.readLine(); //Monday
-            fileContents[7] = reader.readLine(); //Tuesday
-            fileContents[8] = reader.readLine(); //Wednesday
-            fileContents[9] = reader.readLine(); //Thursday
-            fileContents[10] = reader.readLine(); //Friday
-            fileContents[11] = reader.readLine(); //Saturday
-            fileContents[12] = reader.readLine(); //Sunday
-
-            reader.close();
-            Log.d(TAG, fileContents[12]);
-        } catch (IOException e) {
-            Log.e(TAG, "readFile: ", e);
-        }
-    }
-
-    /**
-     * Initiates the conversion of the DW file & acting as a staging method.
-     *
-     * @param c   context
-     * @param uri user-supplied file
-     */
-    public void startConversion(Context c, Uri uri) {
-        Log.d(TAG, "started reading file: ");
-        toRead = uri;
-
-        if (toRead == null) {
-            Log.e(TAG, "No valid DW files were present to read.");
-            return;
-        }
-
-        Log.d(TAG, "Using file: " + uri.getPath());
-        readFile(uri, c);
-        processFile(context);
     }
 
     /**
