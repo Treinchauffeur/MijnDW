@@ -818,6 +818,9 @@ public class DWReader {
                         mondayShift.getLocation() + " " + mondayShift.getShiftNumber() :
                         mondayShift.getLocation() + " " + mondayShift.getShiftNumberModifier() + mondayShift.getShiftNumber();
             else summaryString = mondayShift.getLocation() + " " + mondayShift.getShiftNumber();
+            if (fullDaysOnly)
+                summaryString += " " + new SimpleDateFormat("HH:mm").format(mondayShift.getStartMillis()) + " - " +
+                        new SimpleDateFormat("HH:mm").format(mondayShift.getEndMillis());
             Summary summary = mondayEvent.setSummary(summaryString);
 
             Description description = mondayEvent.setDescription(fileContents[6]);
@@ -844,6 +847,9 @@ public class DWReader {
                         tuesdayShift.getLocation() + " " + tuesdayShift.getShiftNumber() :
                         tuesdayShift.getLocation() + " " + tuesdayShift.getShiftNumberModifier() + tuesdayShift.getShiftNumber();
             else summaryString = tuesdayShift.getLocation() + " " + tuesdayShift.getShiftNumber();
+            if (fullDaysOnly)
+                summaryString += " " + new SimpleDateFormat("HH:mm").format(tuesdayShift.getStartMillis()) + " - " +
+                        new SimpleDateFormat("HH:mm").format(tuesdayShift.getEndMillis());
             Summary summary = tuesdayEvent.setSummary(summaryString);
 
             Description description = tuesdayEvent.setDescription(fileContents[7]);
@@ -871,6 +877,9 @@ public class DWReader {
                         wednesdayShift.getLocation() + " " + wednesdayShift.getShiftNumberModifier() + wednesdayShift.getShiftNumber();
             else
                 summaryString = wednesdayShift.getLocation() + " " + wednesdayShift.getShiftNumber();
+            if (fullDaysOnly)
+                summaryString += " " + new SimpleDateFormat("HH:mm").format(wednesdayShift.getStartMillis()) + " - " +
+                        new SimpleDateFormat("HH:mm").format(wednesdayShift.getEndMillis());
             Summary summary = wednesdayEvent.setSummary(summaryString);
 
             Description description = wednesdayEvent.setDescription(fileContents[8]);
@@ -897,6 +906,9 @@ public class DWReader {
                         thursdayShift.getLocation() + " " + thursdayShift.getShiftNumber() :
                         thursdayShift.getLocation() + " " + thursdayShift.getShiftNumberModifier() + thursdayShift.getShiftNumber();
             else summaryString = thursdayShift.getLocation() + " " + thursdayShift.getShiftNumber();
+            if (fullDaysOnly)
+                summaryString += " " + new SimpleDateFormat("HH:mm").format(thursdayShift.getStartMillis()) + " - " +
+                        new SimpleDateFormat("HH:mm").format(thursdayShift.getEndMillis());
             Summary summary = thursdayEvent.setSummary(summaryString);
 
             Description description = thursdayEvent.setDescription(fileContents[9]);
@@ -923,6 +935,9 @@ public class DWReader {
                         fridayShift.getLocation() + " " + fridayShift.getShiftNumber() :
                         fridayShift.getLocation() + " " + fridayShift.getShiftNumberModifier() + fridayShift.getShiftNumber();
             else summaryString = fridayShift.getLocation() + " " + fridayShift.getShiftNumber();
+            if (fullDaysOnly)
+                summaryString += " " + new SimpleDateFormat("HH:mm").format(fridayShift.getStartMillis()) + " - " +
+                        new SimpleDateFormat("HH:mm").format(fridayShift.getEndMillis());
             Summary summary = fridayEvent.setSummary(summaryString);
 
             Description description = fridayEvent.setDescription(fileContents[10]);
@@ -949,6 +964,9 @@ public class DWReader {
                         saturdayShift.getLocation() + " " + saturdayShift.getShiftNumber() :
                         saturdayShift.getLocation() + " " + saturdayShift.getShiftNumberModifier() + saturdayShift.getShiftNumber();
             else summaryString = saturdayShift.getLocation() + " " + saturdayShift.getShiftNumber();
+            if (fullDaysOnly)
+                summaryString += " " + new SimpleDateFormat("HH:mm").format(saturdayShift.getStartMillis()) + " - " +
+                        new SimpleDateFormat("HH:mm").format(saturdayShift.getEndMillis());
             Summary summary = saturdayEvent.setSummary(summaryString);
 
             Description description = saturdayEvent.setDescription(fileContents[11]);
@@ -975,11 +993,14 @@ public class DWReader {
                         sundayShift.getLocation() + " " + sundayShift.getShiftNumber() :
                         sundayShift.getLocation() + " " + sundayShift.getShiftNumberModifier() + sundayShift.getShiftNumber();
             else summaryString = sundayShift.getLocation() + " " + sundayShift.getShiftNumber();
+            if (fullDaysOnly)
+                summaryString += " " + new SimpleDateFormat("HH:mm").format(sundayShift.getStartMillis()) + " - " +
+                        new SimpleDateFormat("HH:mm").format(sundayShift.getEndMillis());
             Summary summary = sundayEvent.setSummary(summaryString);
+            summary.setLanguage("nl");
 
             Description description = sundayEvent.setDescription(fileContents[12]);
             description.setLanguage("nl");
-            summary.setLanguage("nl");
 
             Date start = sundayShift.getStartTime();
             if (fullDaysOnly) sundayEvent.setDateStart(Utils.atStartOfDay(start));
