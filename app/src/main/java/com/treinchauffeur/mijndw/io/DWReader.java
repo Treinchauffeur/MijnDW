@@ -1,12 +1,14 @@
 package com.treinchauffeur.mijndw.io;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.util.Log;
-import android.widget.Toast;
 
+import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.snackbar.Snackbar;
 import com.treinchauffeur.mijndw.R;
 import com.treinchauffeur.mijndw.misc.Utils;
 import com.treinchauffeur.mijndw.obj.Shift;
@@ -379,7 +381,8 @@ public class DWReader {
             if (wednesdayArray[2].equals("!") || wednesdayArray[2].equals("@") || wednesdayArray[2].equals(">")
                     || wednesdayArray[2].equals("<") || wednesdayArray[2].equals("*") || wednesdayArray[2].equals("?")
                     || wednesdayArray[2].equals("E") || wednesdayArray[2].equals("#")
-                    || wednesdayArray[2].equals("$") || wednesdayArray[2].equals("%")) { // Check if we have modifiers
+                    || wednesdayArray[2].equals("$") || wednesdayArray[2].equals("%")
+                    || wednesdayArray[2].startsWith("P")) { // Check if we have modifiers
                 wednesdayModifier = wednesdayArray[2];
                 for (int i = 2; i < wednesdayArray.length - 1; i++) { // If so, get rid of them but save them. They mess
                     // things up later on
@@ -788,7 +791,10 @@ public class DWReader {
 
             Log.d(TAG, "//////////// END OF WEEK ////////////");
 
-            Toast.makeText(context, "DW geladen: week " + weekNumber + " van " + yearNumber, Toast.LENGTH_SHORT).show();
+            Snackbar successBar = Snackbar.make(((Activity) context).findViewById(R.id.mainView), "DW geladen: week " +
+                    weekNumber + " van " + yearNumber, Snackbar.LENGTH_LONG);
+            successBar.setAnimationMode(BaseTransientBottomBar.ANIMATION_MODE_SLIDE);
+            successBar.show();
 
             Log.d(TAG, "Finished scanning " + toRead.getPath());
         } catch (ParseException e) {
@@ -799,13 +805,13 @@ public class DWReader {
 
     /**
      * Puts all the shift details from their respective objects in to an iCalendar String using biWeekly.
-     *
      * @return the full, completed iCalendar String.
      */
     public String getCalendarICS() {
         SharedPreferences prefs = context.getSharedPreferences(context.getString(R.string.sharedPrefs), Context.MODE_PRIVATE);
         boolean displayModifiers = prefs.getBoolean("displayModifiers", true);
         boolean fullDaysOnly = prefs.getBoolean("fullDaysOnly", false);
+        boolean displayProfession = prefs.getBoolean("displayProfession", true);
 
         String ics = "";
         ICalendar iCal = new ICalendar();
@@ -821,6 +827,8 @@ public class DWReader {
             if (fullDaysOnly)
                 summaryString += " " + new SimpleDateFormat("HH:mm").format(mondayShift.getStartMillis()) + " - " +
                         new SimpleDateFormat("HH:mm").format(mondayShift.getEndMillis());
+
+            summaryString = displayProfession ? (mondayShift.getProfession() + " " + summaryString) : summaryString;
             Summary summary = mondayEvent.setSummary(summaryString);
 
             Description description = mondayEvent.setDescription(fileContents[6]);
@@ -850,6 +858,8 @@ public class DWReader {
             if (fullDaysOnly)
                 summaryString += " " + new SimpleDateFormat("HH:mm").format(tuesdayShift.getStartMillis()) + " - " +
                         new SimpleDateFormat("HH:mm").format(tuesdayShift.getEndMillis());
+
+            summaryString = displayProfession ? (tuesdayShift.getProfession() + " " + summaryString) : summaryString;
             Summary summary = tuesdayEvent.setSummary(summaryString);
 
             Description description = tuesdayEvent.setDescription(fileContents[7]);
@@ -880,6 +890,8 @@ public class DWReader {
             if (fullDaysOnly)
                 summaryString += " " + new SimpleDateFormat("HH:mm").format(wednesdayShift.getStartMillis()) + " - " +
                         new SimpleDateFormat("HH:mm").format(wednesdayShift.getEndMillis());
+
+            summaryString = displayProfession ? (wednesdayShift.getProfession() + " " + summaryString) : summaryString;
             Summary summary = wednesdayEvent.setSummary(summaryString);
 
             Description description = wednesdayEvent.setDescription(fileContents[8]);
@@ -909,6 +921,8 @@ public class DWReader {
             if (fullDaysOnly)
                 summaryString += " " + new SimpleDateFormat("HH:mm").format(thursdayShift.getStartMillis()) + " - " +
                         new SimpleDateFormat("HH:mm").format(thursdayShift.getEndMillis());
+
+            summaryString = displayProfession ? (thursdayShift.getProfession() + " " + summaryString) : summaryString;
             Summary summary = thursdayEvent.setSummary(summaryString);
 
             Description description = thursdayEvent.setDescription(fileContents[9]);
@@ -938,6 +952,8 @@ public class DWReader {
             if (fullDaysOnly)
                 summaryString += " " + new SimpleDateFormat("HH:mm").format(fridayShift.getStartMillis()) + " - " +
                         new SimpleDateFormat("HH:mm").format(fridayShift.getEndMillis());
+
+            summaryString = displayProfession ? (fridayShift.getProfession() + " " + summaryString) : summaryString;
             Summary summary = fridayEvent.setSummary(summaryString);
 
             Description description = fridayEvent.setDescription(fileContents[10]);
@@ -967,6 +983,8 @@ public class DWReader {
             if (fullDaysOnly)
                 summaryString += " " + new SimpleDateFormat("HH:mm").format(saturdayShift.getStartMillis()) + " - " +
                         new SimpleDateFormat("HH:mm").format(saturdayShift.getEndMillis());
+
+            summaryString = displayProfession ? (saturdayShift.getProfession() + " " + summaryString) : summaryString;
             Summary summary = saturdayEvent.setSummary(summaryString);
 
             Description description = saturdayEvent.setDescription(fileContents[11]);
@@ -996,6 +1014,8 @@ public class DWReader {
             if (fullDaysOnly)
                 summaryString += " " + new SimpleDateFormat("HH:mm").format(sundayShift.getStartMillis()) + " - " +
                         new SimpleDateFormat("HH:mm").format(sundayShift.getEndMillis());
+
+            summaryString = displayProfession ? (sundayShift.getProfession() + " " + summaryString) : summaryString;
             Summary summary = sundayEvent.setSummary(summaryString);
             summary.setLanguage("nl");
 

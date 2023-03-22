@@ -44,7 +44,7 @@ public class MainActivity extends Activity {
     EditText dwContent, icsContent;
     TextView loadedNone, loadedSuccess, loadedError, devHint;
     CardView infoCard;
-    MaterialSwitch showModifiers, fullDaysOnly;
+    MaterialSwitch showProfession, showModifiers, fullDaysOnly;
     MaterialToolbar toolbar;
 
     @Override
@@ -66,6 +66,7 @@ public class MainActivity extends Activity {
         loadedSuccess = findViewById(R.id.loadedSuccessfully);
         loadedError = findViewById(R.id.loadedError);
         infoCard = findViewById(R.id.infoCard);
+        showProfession = findViewById(R.id.professionCheckBox);
         showModifiers = findViewById(R.id.modifiersCheckBox);
         fullDaysOnly = findViewById(R.id.wholeDayCheckBox);
 
@@ -98,6 +99,11 @@ public class MainActivity extends Activity {
             dwContent.setVisibility(View.GONE);
             icsContent.setVisibility(View.GONE);
         }
+        if (!prefs.contains("displayProfession")) {
+            editor.putBoolean("displayProfession", showProfession.isChecked());
+        } else {
+            showProfession.setChecked(prefs.getBoolean("displayProfession", false));
+        }
 
         if (!prefs.contains("displayModifiers")) {
             editor.putBoolean("displayModifiers", showModifiers.isChecked());
@@ -111,6 +117,17 @@ public class MainActivity extends Activity {
             fullDaysOnly.setChecked(prefs.getBoolean("fullDaysOnly", false));
         }
         editor.apply();
+
+        showProfession.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                btnReset.callOnClick();
+                SharedPreferences prefs = getSharedPreferences(getString(R.string.sharedPrefs), Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.putBoolean("displayProfession", compoundButton.isChecked());
+                editor.apply();
+            }
+        });
 
         showModifiers.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override

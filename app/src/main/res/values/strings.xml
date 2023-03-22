@@ -3,6 +3,7 @@
     <string name="welcomeInfo">Hey collega! Welkom bij de Mijn DW app; een app geschreven vóór en dóór collega\'s die het mogelijk maakt om de diensten uit je DW direct in je agenda te zetten. Handig toch?</string>
     <string name="usageInfo">Download éérst het tekstbestand dat bij de DW-mail wordt geleverd. Selecteer daarna eventueel opties hier beneden. Laad ten slotte het gedownloade bestand in middels de knop.</string>
     <string name="modifiersText"><![CDATA[Geef extra dienst-symbolen weer in agendapunt-titel. Bijv: !, @, > etc.]]></string>
+    <string name="professionText"><![CDATA[Start agendapunt met functietitel. Bijv: Mcn … of HC …]]></string>
     <string name="options">Opties</string>
     <string name="wholeDays">Agendapunten duren hele dagen.</string>
     <string name="noFilesLoaded">Momenteel is geen bestand gekozen!</string>
