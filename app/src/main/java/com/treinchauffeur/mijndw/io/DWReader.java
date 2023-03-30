@@ -198,9 +198,7 @@ public class DWReader {
             String[] mondayArray = mondayLine.split(" ");
 
             //Check if we have modifiers
-            if (mondayArray[2].equals("!") || mondayArray[2].equals("@") || mondayArray[2].equals(">")
-                    || mondayArray[2].equals("<") || mondayArray[2].equals("*") || mondayArray[2].equals("?")
-                    || mondayArray[2].equals("E") || mondayArray[2].equals("#") || mondayArray[2].equals("$") || mondayArray[2].equals("%")) {
+            if (isShiftModifier(mondayArray[2])) {
                 mondayModifier = mondayArray[2];
                 for (int i = 2; i < mondayArray.length - 1; i++) { // If so, get rid of them but save them. They mess
                     // things up later on
@@ -294,9 +292,7 @@ public class DWReader {
             String tuesdayLine = fileContents[7].replaceAll("\\s+", " ");
             String tuesdayModifier = "-1";
             String[] tuesdayArray = tuesdayLine.split(" ");
-            if (tuesdayArray[2].equals("!") || tuesdayArray[2].equals("@") || tuesdayArray[2].equals(">")
-                    || tuesdayArray[2].equals("<") || tuesdayArray[2].equals("*") || tuesdayArray[2].equals("?")
-                    || tuesdayArray[2].equals("E") || tuesdayArray[2].equals("#") || tuesdayArray[2].equals("$") || tuesdayArray[2].equals("%")) { // Check
+            if (isShiftModifier(tuesdayArray[2])) { // Check
                 // if
                 // we
                 // have
@@ -378,11 +374,7 @@ public class DWReader {
             String wednesdayLine = fileContents[8].replaceAll("\\s+", " ");
             String wednesdayModifier = "-1";
             String[] wednesdayArray = wednesdayLine.split(" ");
-            if (wednesdayArray[2].equals("!") || wednesdayArray[2].equals("@") || wednesdayArray[2].equals(">")
-                    || wednesdayArray[2].equals("<") || wednesdayArray[2].equals("*") || wednesdayArray[2].equals("?")
-                    || wednesdayArray[2].equals("E") || wednesdayArray[2].equals("#")
-                    || wednesdayArray[2].equals("$") || wednesdayArray[2].equals("%")
-                    || wednesdayArray[2].startsWith("P")) { // Check if we have modifiers
+            if (isShiftModifier(wednesdayArray[2])) { // Check if we have modifiers
                 wednesdayModifier = wednesdayArray[2];
                 for (int i = 2; i < wednesdayArray.length - 1; i++) { // If so, get rid of them but save them. They mess
                     // things up later on
@@ -459,9 +451,7 @@ public class DWReader {
             String thursdayLine = fileContents[9].replaceAll("\\s+", " ");
             String thursdayModifier = "-1";
             String[] thursdayArray = thursdayLine.split(" ");
-            if (thursdayArray[2].equals("!") || thursdayArray[2].equals("@") || thursdayArray[2].equals(">")
-                    || thursdayArray[2].equals("<") || thursdayArray[2].equals("*") || thursdayArray[2].equals("?")
-                    || thursdayArray[2].equals("E") || thursdayArray[2].equals("#") || thursdayArray[2].equals("$") || thursdayArray[2].equals("%")) { // Check
+            if (isShiftModifier(thursdayArray[2])) { // Check
                 // if
                 // we
                 // have
@@ -542,9 +532,7 @@ public class DWReader {
             String fridayLine = fileContents[10].replaceAll("\\s+", " ");
             String fridayModifier = "-1";
             String[] fridayArray = fridayLine.split(" ");
-            if (fridayArray[2].equals("!") || fridayArray[2].equals("@") || fridayArray[2].equals(">")
-                    || fridayArray[2].equals("<") || fridayArray[2].equals("*") || fridayArray[2].equals("?")
-                    || fridayArray[2].equals("E") || fridayArray[2].equals("#") || fridayArray[2].equals("$") || fridayArray[2].equals("%")) { // Check
+            if (isShiftModifier(fridayArray[2])) { // Check
                 // if
                 // we
                 // have
@@ -626,9 +614,7 @@ public class DWReader {
             String saturdayLine = fileContents[11].replaceAll("\\s+", " ");
             String saturdayModifier = "-1";
             String[] saturdayArray = saturdayLine.split(" ");
-            if (saturdayArray[2].equals("!") || saturdayArray[2].equals("@") || saturdayArray[2].equals(">")
-                    || saturdayArray[2].equals("<") || saturdayArray[2].equals("*") || saturdayArray[2].equals("?")
-                    || saturdayArray[2].equals("E") || saturdayArray[2].equals("#") || saturdayArray[2].equals("$") || saturdayArray[2].equals("%")) { // Check
+            if (isShiftModifier(saturdayArray[2])) { // Check
                 // if
                 // we
                 // have
@@ -709,9 +695,7 @@ public class DWReader {
             String sundayLine = fileContents[12].replaceAll("\\s+", " ");
             String sundayModifier = "-1";
             String[] sundayArray = sundayLine.split(" ");
-            if (sundayArray[2].equals("!") || sundayArray[2].equals("@") || sundayArray[2].equals(">")
-                    || sundayArray[2].equals("<") || sundayArray[2].equals("*") || sundayArray[2].equals("?")
-                    || sundayArray[2].equals("E") || sundayArray[2].equals("#") || sundayArray[2].equals("$") || sundayArray[2].equals("%")) { // Check
+            if (isShiftModifier(sundayArray[2])) { // Check
                 // if
                 // we
                 // have
@@ -1048,5 +1032,42 @@ public class DWReader {
             str += fileContent + "\n";
         }
         return str;
+    }
+
+    /**
+     * Determines whether a symbol or multiple symbols are shift modifiers.
+     * This is necessary in order to properly read each day of the week correctly.
+     *
+     * @param s the given symbol(s).
+     * @return whether it is a shift modifier or not.
+     */
+    public static boolean isShiftModifier(String s) {
+        switch (s) {
+            case "!":
+            case "@":
+            case ">":
+            case "<":
+            case "*":
+            case "?":
+            case "E":
+            case "#":
+            case "$":
+            case "%":
+            case "P":
+            case "P!":
+            case "P@":
+            case "P>":
+            case "P<":
+            case "P*":
+            case "P?":
+            case "PE":
+            case "P#":
+            case "P$":
+            case "P%":
+                return true;
+            default:
+                return false;
+
+        }
     }
 }

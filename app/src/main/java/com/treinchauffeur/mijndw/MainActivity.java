@@ -82,6 +82,14 @@ public class MainActivity extends Activity {
                     editor.putBoolean("DevMode", item.isChecked());
                     editor.apply();
                 }
+                if (item.getItemId() == R.id.mailDev) {
+                    final Intent emailIntent = new Intent(Intent.ACTION_SEND);
+                    emailIntent.setType("text/plain");
+                    emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{"leon.klaczynski@ns.nl"});
+                    emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Over: Mijn DW");
+                    emailIntent.putExtra(Intent.EXTRA_TEXT, "Mijn DW versie " + BuildConfig.VERSION_NAME);
+                    startActivity(Intent.createChooser(emailIntent, "E-mail versturen..."));
+                }
                 return false;
             }
         });

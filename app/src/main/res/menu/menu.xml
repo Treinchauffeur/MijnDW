@@ -4,4 +4,7 @@
         android:checkable="true"
         android:id="@+id/devMode"
         android:title="Informatie voor ontwikkelaars" />
+    <item
+        android:id="@+id/mailDev"
+        android:title="Stuur mail naar ontwikkelaar" />
 </menu>
