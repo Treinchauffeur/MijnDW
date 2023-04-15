@@ -33,6 +33,7 @@
         <item name="colorOnSuccessContainer">#a5f785</item>
         <item name="harmonizeSuccess">true</item>
         <item name="android:statusBarColor">?attr/colorSurface</item>
+        <item name="android:windowLightStatusBar">?attr/isLightTheme</item>
 
     </style>
 </resources>

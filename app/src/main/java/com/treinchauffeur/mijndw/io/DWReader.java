@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
@@ -42,7 +43,7 @@ import biweekly.util.Duration;
 
 public class DWReader {
 
-    private static final String[] fileContents = new String[13];
+    private static String[] fileContents = new String[13];
     private static final String TAG = "Run";
     public static Uri toRead;
     @SuppressLint("SimpleDateFormat")
@@ -81,8 +82,12 @@ public class DWReader {
         }
 
         Log.d(TAG, "Using file: " + uri.getPath());
-        readFile(uri, c);
-        processFile(context);
+
+        if (readFile(uri, c))
+            processFile(context);
+        else {
+            Toast.makeText(c, "Fout in het laden van bestand. Is dit wel een DW bestand?", Toast.LENGTH_SHORT).show();
+        }
     }
 
     /**
@@ -104,12 +109,16 @@ public class DWReader {
      * @param uri User-supplied file
      * @param c   context to use to create inputstream
      */
-    private static void readFile(Uri uri, Context c) {
+    private static boolean readFile(Uri uri, Context c) {
         try {
             InputStream inputStream = c.getContentResolver().openInputStream(uri);
             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
 
             fileContents[0] = reader.readLine(); //first line: Donderdagse Week van WW-YYYY
+
+            if (!fileContents[0].contains("Donderdagse Week van"))
+                return false;
+
             fileContents[1] = reader.readLine(); // Empty for formatting
             fileContents[2] = reader.readLine(); //Staff number + name
             fileContents[3] = reader.readLine(); //Empty again
@@ -125,9 +134,14 @@ public class DWReader {
 
             reader.close();
             Log.d(TAG, fileContents[12]);
+
+
+            if (fileContents[12].startsWith("zo"))
+                return true;
         } catch (IOException e) {
             Log.e(TAG, "readFile: ", e);
         }
+        return false;
     }
 
     /**
@@ -1069,5 +1083,10 @@ public class DWReader {
                 return false;
 
         }
+    }
+
+    public void resetData() {
+        fileContents = new String[13];
+        dw = new ArrayList<>();
     }
 }

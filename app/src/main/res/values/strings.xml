@@ -12,4 +12,8 @@
     <string name="loadedSuccessDummyText">Week 52 van jaar 9999 geladen!</string>
     <string name="loadedError">Er is een fout opgetreden!</string>
     <string name="loadTxtFile">Selecteer .txt bestand</string>
+    <string name="background_image">Background image</string>
+    <string name="lightbulb_icon">Lightbulb icon</string>
+    <string name="toevoegen_aan_kalender">Toevoegen aan kalender</string>
+    <string name="scroll_naar_beneden_voor_ontwikkelaarsinformatie">Scroll naar beneden voor ontwikkelaarsinformatie..</string>
 </resources>

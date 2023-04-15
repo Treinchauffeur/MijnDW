@@ -10,12 +10,13 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -54,6 +55,22 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         SharedPreferences prefs = getSharedPreferences(getString(R.string.sharedPrefs), Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+        ImageView bgImage = findViewById(R.id.bgImageCalendar);
+        ImageView bgImageClock = findViewById(R.id.bgImageClock);
+        ImageView bgImageTrainICM = findViewById(R.id.bgImageTrainICM);
+        ImageView bgImageTrainVIRM = findViewById(R.id.bgImageTrainVIRM);
+        ImageView bgImageTrainLoc = findViewById(R.id.bgImageTrainLoc);
+        ImageView bgImageTrainVelaro = findViewById(R.id.bgImageTrainVelaro);
+
+        int transparency = 70;
+        bgImageTrainICM.setImageAlpha(transparency);
+        bgImageTrainVIRM.setImageAlpha(transparency);
+        bgImageTrainLoc.setImageAlpha(transparency);
+        bgImageTrainVelaro.setImageAlpha(transparency);
+        bgImage.setImageAlpha(transparency);
+        bgImageClock.setImageAlpha(transparency);
+
 
         //Loading all the UI elements
         devHint = findViewById(R.id.devHint);
@@ -71,8 +88,6 @@ public class MainActivity extends Activity {
         fullDaysOnly = findViewById(R.id.wholeDayCheckBox);
 
         toolbar = findViewById(R.id.toolbar);
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu, toolbar.getMenu());
         toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
@@ -220,6 +235,7 @@ public class MainActivity extends Activity {
     }
 
     private void handleFileIntent(Uri uri) {
+        dwReader.resetData();
         dwReader.startConversion(this, uri);
         dwContent.setText(dwReader.fullFileString());
         icsContent.setText(dwReader.getCalendarICS());
@@ -266,6 +282,13 @@ public class MainActivity extends Activity {
             });
         } else {
             loadedError.setVisibility(View.VISIBLE);
+
+            loadedSuccess.setVisibility(View.GONE);
+            loadedNone.setVisibility(View.GONE);
+
+            btnLoadFile.setVisibility(View.VISIBLE);
+            btnReset.setVisibility(View.GONE);
+            btnConvert.setVisibility(View.GONE);
         }
     }
 }
