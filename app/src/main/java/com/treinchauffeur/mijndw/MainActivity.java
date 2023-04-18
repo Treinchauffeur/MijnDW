@@ -56,6 +56,7 @@ public class MainActivity extends Activity {
         SharedPreferences prefs = getSharedPreferences(getString(R.string.sharedPrefs), Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+        toolbar = findViewById(R.id.toolbar);
         ImageView bgImage = findViewById(R.id.bgImageCalendar);
         ImageView bgImageClock = findViewById(R.id.bgImageClock);
         ImageView bgImageTrainICM = findViewById(R.id.bgImageTrainICM);
@@ -63,13 +64,37 @@ public class MainActivity extends Activity {
         ImageView bgImageTrainLoc = findViewById(R.id.bgImageTrainLoc);
         ImageView bgImageTrainVelaro = findViewById(R.id.bgImageTrainVelaro);
 
-        int transparency = 70;
+        int transparency = 50;
         bgImageTrainICM.setImageAlpha(transparency);
         bgImageTrainVIRM.setImageAlpha(transparency);
         bgImageTrainLoc.setImageAlpha(transparency);
         bgImageTrainVelaro.setImageAlpha(transparency);
         bgImage.setImageAlpha(transparency);
         bgImageClock.setImageAlpha(transparency);
+
+        final int[] locPressedAmount = {0};
+        toolbar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (locPressedAmount[0] > 9) {
+                    if (!isDev) {
+                        setDev(true);
+                        editor.putBoolean("DevMode", true);
+                        editor.apply();
+                        Toast.makeText(MainActivity.this, "You're now a developer!", Toast.LENGTH_SHORT).show();
+                        locPressedAmount[0] = 0;
+                    } else {
+                        setDev(false);
+                        editor.putBoolean("DevMode", false);
+                        editor.apply();
+                        Toast.makeText(MainActivity.this, "You're not a developer anymore!", Toast.LENGTH_SHORT).show();
+                        locPressedAmount[0] = 0;
+                    }
+                }
+                locPressedAmount[0]++;
+                Log.d(TAG, "onClick: ++");
+            }
+        });
 
 
         //Loading all the UI elements
@@ -87,7 +112,6 @@ public class MainActivity extends Activity {
         showModifiers = findViewById(R.id.modifiersCheckBox);
         fullDaysOnly = findViewById(R.id.wholeDayCheckBox);
 
-        toolbar = findViewById(R.id.toolbar);
         toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
@@ -117,10 +141,12 @@ public class MainActivity extends Activity {
             devHint.setVisibility(View.VISIBLE);
             dwContent.setVisibility(View.VISIBLE);
             icsContent.setVisibility(View.VISIBLE);
+            toolbar.getMenu().getItem(0).setVisible(true);
         } else {
             devHint.setVisibility(View.GONE);
             dwContent.setVisibility(View.GONE);
             icsContent.setVisibility(View.GONE);
+            toolbar.getMenu().getItem(0).setVisible(false);
         }
         if (!prefs.contains("displayProfession")) {
             editor.putBoolean("displayProfession", showProfession.isChecked());
@@ -216,10 +242,12 @@ public class MainActivity extends Activity {
             devHint.setVisibility(View.VISIBLE);
             dwContent.setVisibility(View.VISIBLE);
             icsContent.setVisibility(View.VISIBLE);
+            toolbar.getMenu().getItem(0).setVisible(true);
         } else {
             devHint.setVisibility(View.GONE);
             dwContent.setVisibility(View.GONE);
             icsContent.setVisibility(View.GONE);
+            toolbar.getMenu().getItem(0).setVisible(false);
         }
     }
 

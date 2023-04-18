@@ -116,7 +116,7 @@
                 android:outlineAmbientShadowColor="#FF000000"
                 android:layout_marginHorizontal="30dp"
                 app:cardBackgroundColor="?attr/colorSecondaryContainer"
-                app:cardElevation="0dp"
+                app:cardElevation="3dp"
                 app:cardCornerRadius="15dp"
                 android:layout_marginBottom="20dp">
 
@@ -152,7 +152,7 @@
                 android:outlineAmbientShadowColor="#FF000000"
                 android:layout_marginHorizontal="30dp"
                 app:cardBackgroundColor="?attr/colorSecondaryContainer"
-                app:cardElevation="0dp"
+                app:cardElevation="3dp"
                 app:cardCornerRadius="15dp"
                 android:layout_marginBottom="20dp">
 
@@ -188,7 +188,7 @@
                 android:outlineAmbientShadowColor="#FF000000"
                 android:layout_marginHorizontal="30dp"
                 app:cardBackgroundColor="?attr/colorSurfaceContainerHigh"
-                app:cardElevation="0dp"
+                app:cardElevation="3dp"
                 app:cardCornerRadius="15dp"
                 android:layout_marginBottom="20dp">
 
