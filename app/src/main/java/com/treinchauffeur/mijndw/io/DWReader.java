@@ -116,7 +116,9 @@ public class DWReader {
 
             fileContents[0] = reader.readLine(); //first line: Donderdagse Week van WW-YYYY
 
-            if (!fileContents[0].contains("Donderdagse Week van"))
+            if (fileContents[0] == null)
+                return false;
+            else if (!fileContents[0].contains("Donderdagse Week van"))
                 return false;
 
             fileContents[1] = reader.readLine(); // Empty for formatting

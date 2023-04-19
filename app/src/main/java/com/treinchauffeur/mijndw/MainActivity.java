@@ -1,6 +1,7 @@
 package com.treinchauffeur.mijndw;
 
 
+import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
@@ -12,11 +13,13 @@ import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.PowerManager;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -29,6 +32,7 @@ import androidx.core.content.FileProvider;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.materialswitch.MaterialSwitch;
 import com.treinchauffeur.mijndw.io.DWReader;
+import com.treinchauffeur.mijndw.misc.MiscTools;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -46,10 +50,18 @@ public class MainActivity extends Activity {
     Button btnConvert, btnLoadFile, btnReset;
     EditText dwContent, icsContent;
     TextView loadedNone, loadedSuccess, loadedError, devHint;
-    CardView infoCard;
+    CardView infoCard, usageCard;
     MaterialSwitch showProfession, showModifiers, fullDaysOnly;
     MaterialToolbar toolbar;
+    private boolean isAnimating = false;
 
+    /**
+     * Starting up the app, loading the layout including all the views.
+     * Doing some UI stuff like programmatically setting the background images' transparency.
+     * Handling a lot of buttons like sending an email to the developer & hidden DevMode option.
+     * Also handling all the options the user can set to process their file.
+     * Finally, we're animating the background & infoCard.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
@@ -76,15 +88,6 @@ public class MainActivity extends Activity {
         bgImage.setImageAlpha(transparency);
         bgImageClock.setImageAlpha(transparency);
 
-        final int[] locPressedAmount = {0};
-        toolbar.setOnClickListener(v -> {
-            if (locPressedAmount[0] > 9) {
-                setDev(!isDev);
-                locPressedAmount[0] = 0;
-            }
-            locPressedAmount[0]++;
-        });
-
 
         //Loading all the UI elements
         devHint = findViewById(R.id.devHint);
@@ -97,6 +100,7 @@ public class MainActivity extends Activity {
         loadedSuccess = findViewById(R.id.loadedSuccessfully);
         loadedError = findViewById(R.id.loadedError);
         infoCard = findViewById(R.id.infoCard);
+        usageCard = findViewById(R.id.usageCard);
         showProfession = findViewById(R.id.professionCheckBox);
         showModifiers = findViewById(R.id.modifiersCheckBox);
         fullDaysOnly = findViewById(R.id.wholeDayCheckBox);
@@ -116,6 +120,16 @@ public class MainActivity extends Activity {
             }
             return false;
         });
+
+        final int[] locPressedAmount = {0};
+        usageCard.setOnClickListener(v -> {
+            if (locPressedAmount[0] > 9) {
+                setDev(!isDev);
+                locPressedAmount[0] = 0;
+            }
+            locPressedAmount[0]++;
+        });
+
         if (prefs.contains("DevMode")) {
             setDevWithoutToast(prefs.getBoolean("DevMode", false));
         } else {
@@ -166,27 +180,6 @@ public class MainActivity extends Activity {
         });
 
         if (!prefs.contains("dismissedInfoCard")) {
-            Runnable clickRunnable = () -> {
-                if (infoCard.getVisibility() == View.GONE)
-                    return;
-
-                final long now = SystemClock.uptimeMillis();
-                final MotionEvent pressEvent = MotionEvent.obtain(now, now, MotionEvent.ACTION_DOWN, 0, 0, 0);
-                infoCard.dispatchTouchEvent(pressEvent);
-
-                new Handler().postDelayed(() -> {
-                    final long now1 = SystemClock.uptimeMillis();
-                    final MotionEvent cancelEvent = MotionEvent.obtain(now1, now1, MotionEvent.ACTION_CANCEL, 0, 0, 0);
-                    infoCard.dispatchTouchEvent(cancelEvent);
-                }, 250);
-
-            };
-
-            infoCard.postDelayed(clickRunnable, 5000);
-            infoCard.postDelayed(clickRunnable, 10000);
-            infoCard.postDelayed(clickRunnable, 15000);
-            infoCard.postDelayed(clickRunnable, 20000);
-
             infoCard.setOnClickListener(view -> {
                 infoCard.setVisibility(View.GONE);
                 SharedPreferences prefs12 = getSharedPreferences(getString(R.string.sharedPrefs), Context.MODE_PRIVATE);
@@ -222,13 +215,93 @@ public class MainActivity extends Activity {
             Uri fileUri = intent.getData();
             handleFileIntent(fileUri);
         }
+
+        performAnimations();
     }
 
-    private void setDev(boolean checked) {
-        isDev = checked;
-        toolbar.getMenu().getItem(0).setChecked(checked);
-        toolbar.getMenu().getItem(0).setVisible(checked);
-        if (checked) {
+    /**
+     * We're animating the background train images as well as hinting to the user that the infoCard can be dismissed.
+     * Animations keep things nice & dynamic.
+     */
+    @SuppressLint("Recycle")
+    private void performAnimations() {
+        PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        if (powerManager.isPowerSaveMode() || isAnimating) return;
+        isAnimating = true;
+
+        ImageView bgImageTrainICM = findViewById(R.id.bgImageTrainICM);
+        ImageView bgImageTrainVIRM = findViewById(R.id.bgImageTrainVIRM);
+        ImageView bgImageTrainLoc = findViewById(R.id.bgImageTrainLoc);
+        ImageView bgImageTrainVelaro = findViewById(R.id.bgImageTrainVelaro);
+        int minStartDelay = 0, maxStartDelay = 3000;
+        int minTrainPassTime = 5000, maxTrainPassTime = 15000;
+
+        ObjectAnimator animationICM = ObjectAnimator.ofFloat(bgImageTrainICM, "translationX", 0f);
+        animationICM.setDuration(MiscTools.generateRandomNumber(minTrainPassTime, maxTrainPassTime));
+        animationICM.setInterpolator(new AccelerateDecelerateInterpolator());
+        bgImageTrainICM.setX(-1500f);
+        Runnable icmRunnable = animationICM::start;
+        bgImageTrainICM.postDelayed(icmRunnable, MiscTools.generateRandomNumber(minStartDelay, maxStartDelay));
+
+        ObjectAnimator animationVIRM = ObjectAnimator.ofFloat(bgImageTrainVIRM, "translationX", 0f);
+        animationVIRM.setDuration(MiscTools.generateRandomNumber(minTrainPassTime, maxTrainPassTime));
+        animationVIRM.setInterpolator(new AccelerateDecelerateInterpolator());
+        bgImageTrainVIRM.setX(-1500f);
+        Runnable virmRunnable = animationVIRM::start;
+        bgImageTrainVIRM.postDelayed(virmRunnable, MiscTools.generateRandomNumber(minStartDelay, maxStartDelay));
+
+        ObjectAnimator animationLoc = ObjectAnimator.ofFloat(bgImageTrainLoc, "translationX", 0f);
+        animationLoc.setDuration(MiscTools.generateRandomNumber(minTrainPassTime, maxTrainPassTime));
+        animationLoc.setInterpolator(new AccelerateDecelerateInterpolator());
+        bgImageTrainLoc.setX(1500f);
+        Runnable locRunnable = animationLoc::start;
+        bgImageTrainLoc.postDelayed(locRunnable, MiscTools.generateRandomNumber(minStartDelay, maxStartDelay));
+
+        ObjectAnimator animationVelaro = ObjectAnimator.ofFloat(bgImageTrainVelaro, "translationX", 0f);
+        animationVelaro.setDuration(MiscTools.generateRandomNumber(minTrainPassTime, maxTrainPassTime));
+        animationVelaro.setInterpolator(new AccelerateDecelerateInterpolator());
+        bgImageTrainVelaro.setX(1500f);
+        Runnable velaroRunnable = animationVelaro::start;
+        bgImageTrainVelaro.postDelayed(velaroRunnable, MiscTools.generateRandomNumber(minStartDelay, maxStartDelay));
+
+        if (infoCard.getVisibility() == View.VISIBLE) {
+            Runnable animationRunnable = () -> {
+                if (infoCard.getVisibility() == View.GONE)
+                    return;
+
+                final long now = SystemClock.uptimeMillis();
+                final MotionEvent pressEvent = MotionEvent.obtain(now, now, MotionEvent.ACTION_DOWN, 0, 0, 0);
+                infoCard.dispatchTouchEvent(pressEvent);
+
+                new Handler().postDelayed(() -> {
+                    final long now1 = SystemClock.uptimeMillis();
+                    final MotionEvent cancelEvent = MotionEvent.obtain(now1, now1, MotionEvent.ACTION_CANCEL, 0, 0, 0);
+                    infoCard.dispatchTouchEvent(cancelEvent);
+                }, 1000);
+            };
+
+            Runnable finalRunnable = () -> isAnimating = false;
+
+            infoCard.postDelayed(animationRunnable, 5000);
+            infoCard.postDelayed(animationRunnable, 10000);
+            infoCard.postDelayed(animationRunnable, 15000);
+            infoCard.postDelayed(animationRunnable, 20000);
+            infoCard.postDelayed(animationRunnable, 25000);
+            infoCard.postDelayed(finalRunnable, 27000);
+        }
+    }
+
+    /**
+     * Turns on or off developer mode. In Devmode you get additional fields with the raw data of both
+     * the original file & the iCal output.
+     *
+     * @param check whether DevMode should be on or off
+     */
+    private void setDev(boolean check) {
+        isDev = check;
+        toolbar.getMenu().getItem(0).setChecked(check);
+        toolbar.getMenu().getItem(0).setVisible(check);
+        if (check) {
             devHint.setVisibility(View.VISIBLE);
             dwContent.setVisibility(View.VISIBLE);
             icsContent.setVisibility(View.VISIBLE);
@@ -240,16 +313,22 @@ public class MainActivity extends Activity {
 
         SharedPreferences prefs = getSharedPreferences(getString(R.string.sharedPrefs), Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putBoolean("DevMode", checked);
+        editor.putBoolean("DevMode", check);
         editor.apply();
-        Toast.makeText(MainActivity.this, checked ? "You're now a developer!" : "You're not a developer anymore!", Toast.LENGTH_SHORT).show();
+        Toast.makeText(MainActivity.this, check ? "You're now a developer!" : "You're not a developer anymore!", Toast.LENGTH_SHORT).show();
     }
 
-    private void setDevWithoutToast(boolean checked) {
-        isDev = checked;
-        toolbar.getMenu().getItem(0).setChecked(checked);
-        toolbar.getMenu().getItem(0).setVisible(checked);
-        if (checked) {
+    /**
+     * Turns on or off developer mode. In Devmode you get additional fields with the raw data of both
+     * the original file & the iCal output. This one doesn't display a Toast
+     *
+     * @param check whether DevMode should be on or off
+     */
+    private void setDevWithoutToast(boolean check) {
+        isDev = check;
+        toolbar.getMenu().getItem(0).setChecked(check);
+        toolbar.getMenu().getItem(0).setVisible(check);
+        if (check) {
             devHint.setVisibility(View.VISIBLE);
             dwContent.setVisibility(View.VISIBLE);
             icsContent.setVisibility(View.VISIBLE);
@@ -261,10 +340,17 @@ public class MainActivity extends Activity {
 
         SharedPreferences prefs = getSharedPreferences(getString(R.string.sharedPrefs), Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putBoolean("DevMode", checked);
+        editor.putBoolean("DevMode", check);
         editor.apply();
     }
 
+    /**
+     * Handling the incoming file after the user selected it.
+     *
+     * @param requestCode the code used to recognise the request
+     * @param resultCode  success or not
+     * @param intent      recieved intent
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
@@ -276,6 +362,11 @@ public class MainActivity extends Activity {
         }
     }
 
+    /**
+     * Starts reading the file & checks whether it's valid.
+     *
+     * @param uri URI that points to the file
+     */
     @SuppressLint("SetTextI18n")
     private void handleFileIntent(Uri uri) {
         dwReader.resetData();
@@ -330,5 +421,14 @@ public class MainActivity extends Activity {
             btnReset.setVisibility(View.GONE);
             btnConvert.setVisibility(View.GONE);
         }
+    }
+
+    /**
+     * We want the animations to start over to keep a nice & dynamic vibe.
+     */
+    @Override
+    protected void onResume() {
+        performAnimations();
+        super.onResume();
     }
 }
