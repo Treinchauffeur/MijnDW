@@ -254,7 +254,7 @@ public class DWReader {
 
             int mondayMonth = Integer.parseInt(mondayArray[1].split("-")[1]);
             int mondayDay = Integer.parseInt(mondayArray[1].split("-")[0]);
-            if (mondayArray.length <= 3)
+            if (mondayArray.length <= 3 || mondayArray[2].contains("R"))
                 Log.d(TAG, "Staff " + mondayShift.getStaff().getStaffName() + " is free on monday.");
             else {
                 String mondayStartDate = "";
@@ -336,7 +336,7 @@ public class DWReader {
 
             int tuesdayMonth = Integer.parseInt(tuesdayArray[1].split("-")[1]);
             int tuesdayDay = Integer.parseInt(tuesdayArray[1].split("-")[0]);
-            if (tuesdayArray.length <= 3)
+            if (tuesdayArray.length <= 3 || tuesdayArray[2].contains("R"))
                 Log.d(TAG, "Staff " + tuesdayShift.getStaff().getStaffName() + " is free on tuesday.");
             else {
                 String tuesdayStartDate = "";
@@ -414,7 +414,7 @@ public class DWReader {
 
             int wednesdayMonth = Integer.parseInt(wednesdayArray[1].split("-")[1]);
             int wednesdayDay = Integer.parseInt(wednesdayArray[1].split("-")[0]);
-            if (wednesdayArray.length <= 3)
+            if (wednesdayArray.length <= 3 || wednesdayArray[2].contains("R"))
                 Log.d(TAG, "Staff " + wednesdayShift.getStaff().getStaffName() + " is free on wednesday.");
             else {
                 String wednesdayStartDate = "";
@@ -495,7 +495,7 @@ public class DWReader {
 
             int thursdayMonth = Integer.parseInt(thursdayArray[1].split("-")[1]);
             int thursdayDay = Integer.parseInt(thursdayArray[1].split("-")[0]);
-            if (thursdayArray.length <= 3)
+            if (thursdayArray.length <= 3 || thursdayArray[2].contains("R"))
                 Log.d(TAG, "Staff " + thursdayShift.getStaff().getStaffName() + " is free on thursday.");
             else {
                 String thursdayStartDate = "";
@@ -576,7 +576,7 @@ public class DWReader {
 
             int fridayMonth = Integer.parseInt(fridayArray[1].split("-")[1]);
             int fridayDay = Integer.parseInt(fridayArray[1].split("-")[0]);
-            if (fridayArray.length <= 3)
+            if (fridayArray.length <= 3 || fridayArray[2].contains("R"))
                 Log.d(TAG, "Staff " + fridayShift.getStaff().getStaffName() + " is free on friday.");
             else {
                 String fridayStartDate = "";
@@ -658,7 +658,7 @@ public class DWReader {
 
             int saturdayMonth = Integer.parseInt(saturdayArray[1].split("-")[1]);
             int saturdayDay = Integer.parseInt(saturdayArray[1].split("-")[0]);
-            if (saturdayArray.length <= 3)
+            if (saturdayArray.length <= 3 || saturdayArray[2].contains("R"))
                 Log.d(TAG, "Staff " + saturdayShift.getStaff().getStaffName() + " is free on saturday.");
             else {
                 String saturdayStartDate = "";
@@ -739,7 +739,7 @@ public class DWReader {
 
             int sundayMonth = Integer.parseInt(sundayArray[1].split("-")[1]);
             int sundayDay = Integer.parseInt(sundayArray[1].split("-")[0]);
-            if (sundayArray.length <= 3)
+            if (sundayArray.length <= 3 || saturdayArray[2].contains("R"))
                 Log.d(TAG, "Staff " + sundayShift.getStaff().getStaffName() + " is free on sunday.");
             else {
                 String sundayStartDate = "";

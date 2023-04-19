@@ -1,6 +1,7 @@
 package com.treinchauffeur.mijndw;
 
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ClipboardManager;
@@ -10,17 +11,14 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.FileProvider;
 
@@ -73,27 +71,17 @@ public class MainActivity extends Activity {
         bgImageClock.setImageAlpha(transparency);
 
         final int[] locPressedAmount = {0};
-        toolbar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (locPressedAmount[0] > 9) {
-                    if (!isDev) {
-                        setDev(true);
-                        editor.putBoolean("DevMode", true);
-                        editor.apply();
-                        Toast.makeText(MainActivity.this, "You're now a developer!", Toast.LENGTH_SHORT).show();
-                        locPressedAmount[0] = 0;
-                    } else {
-                        setDev(false);
-                        editor.putBoolean("DevMode", false);
-                        editor.apply();
-                        Toast.makeText(MainActivity.this, "You're not a developer anymore!", Toast.LENGTH_SHORT).show();
-                        locPressedAmount[0] = 0;
-                    }
-                }
-                locPressedAmount[0]++;
-                Log.d(TAG, "onClick: ++");
+        toolbar.setOnClickListener(v -> {
+            if (locPressedAmount[0] > 9) {
+                if (!isDev) {
+                    setDev(true);
+                    Toast.makeText(MainActivity.this, "You're now a developer!", Toast.LENGTH_SHORT).show();
+                } else
+                    setDev(false);
+
+                locPressedAmount[0] = 0;
             }
+            locPressedAmount[0]++;
         });
 
 
@@ -112,42 +100,27 @@ public class MainActivity extends Activity {
         showModifiers = findViewById(R.id.modifiersCheckBox);
         fullDaysOnly = findViewById(R.id.wholeDayCheckBox);
 
-        toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                if (item.getItemId() == R.id.devMode) {
-                    item.setChecked(!item.isChecked());
-                    setDev(item.isChecked());
-                    editor.putBoolean("DevMode", item.isChecked());
-                    editor.apply();
-                }
-                if (item.getItemId() == R.id.mailDev) {
-                    final Intent emailIntent = new Intent(Intent.ACTION_SEND);
-                    emailIntent.setType("text/plain");
-                    emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{"treinchauffeur.dev@gmail.com"});
-                    emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Over: Mijn DW");
-                    emailIntent.putExtra(Intent.EXTRA_TEXT, "Mijn DW versie " + BuildConfig.VERSION_NAME);
-                    startActivity(Intent.createChooser(emailIntent, "E-mail versturen..."));
-                }
-                return false;
+        toolbar.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.devMode) {
+                item.setChecked(!item.isChecked());
+                setDev(item.isChecked());
             }
+            if (item.getItemId() == R.id.mailDev) {
+                final Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
+                emailIntent.setData(Uri.parse("mailto:"));
+                emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{"treinchauffeur.dev@gmail.com"});
+                emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Over: Mijn DW");
+                emailIntent.putExtra(Intent.EXTRA_TEXT, "Mijn DW versie " + BuildConfig.VERSION_NAME);
+                startActivity(Intent.createChooser(emailIntent, "E-mail versturen.."));
+            }
+            return false;
         });
         if (prefs.contains("DevMode")) {
-            isDev = prefs.getBoolean("DevMode", false);
-            toolbar.getMenu().getItem(0).setChecked(isDev);
+            setDevWithoutToast(prefs.getBoolean("DevMode", false));
+        } else {
+            setDevWithoutToast(false);
         }
 
-        if (isDev) {
-            devHint.setVisibility(View.VISIBLE);
-            dwContent.setVisibility(View.VISIBLE);
-            icsContent.setVisibility(View.VISIBLE);
-            toolbar.getMenu().getItem(0).setVisible(true);
-        } else {
-            devHint.setVisibility(View.GONE);
-            dwContent.setVisibility(View.GONE);
-            icsContent.setVisibility(View.GONE);
-            toolbar.getMenu().getItem(0).setVisible(false);
-        }
         if (!prefs.contains("displayProfession")) {
             editor.putBoolean("displayProfession", showProfession.isChecked());
         } else {
@@ -167,56 +140,39 @@ public class MainActivity extends Activity {
         }
         editor.apply();
 
-        showProfession.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                btnReset.callOnClick();
-                SharedPreferences prefs = getSharedPreferences(getString(R.string.sharedPrefs), Context.MODE_PRIVATE);
-                SharedPreferences.Editor editor = prefs.edit();
-                editor.putBoolean("displayProfession", compoundButton.isChecked());
-                editor.apply();
-            }
+        showProfession.setOnCheckedChangeListener((compoundButton, b) -> {
+            btnReset.callOnClick();
+            SharedPreferences prefs1 = getSharedPreferences(getString(R.string.sharedPrefs), Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor1 = prefs1.edit();
+            editor1.putBoolean("displayProfession", compoundButton.isChecked());
+            editor1.apply();
         });
 
-        showModifiers.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                btnReset.callOnClick();
-                SharedPreferences prefs = getSharedPreferences(getString(R.string.sharedPrefs), Context.MODE_PRIVATE);
-                SharedPreferences.Editor editor = prefs.edit();
-                editor.putBoolean("displayModifiers", compoundButton.isChecked());
-                editor.apply();
-            }
+        showModifiers.setOnCheckedChangeListener((compoundButton, b) -> {
+            btnReset.callOnClick();
+            SharedPreferences prefs12 = getSharedPreferences(getString(R.string.sharedPrefs), Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor12 = prefs12.edit();
+            editor12.putBoolean("displayModifiers", compoundButton.isChecked());
+            editor12.apply();
         });
 
-        fullDaysOnly.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                btnReset.callOnClick();
-                SharedPreferences prefs = getSharedPreferences(getString(R.string.sharedPrefs), Context.MODE_PRIVATE);
-                SharedPreferences.Editor editor = prefs.edit();
-                editor.putBoolean("fullDaysOnly", compoundButton.isChecked());
-                editor.apply();
-            }
+        fullDaysOnly.setOnCheckedChangeListener((compoundButton, b) -> {
+            btnReset.callOnClick();
+            SharedPreferences prefs13 = getSharedPreferences(getString(R.string.sharedPrefs), Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor13 = prefs13.edit();
+            editor13.putBoolean("fullDaysOnly", compoundButton.isChecked());
+            editor13.apply();
         });
 
-        infoCard.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                infoCard.setVisibility(View.GONE);
-            }
-        });
+        infoCard.setOnClickListener(view -> infoCard.setVisibility(View.GONE));
 
-        btnReset.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                loadedNone.setVisibility(View.VISIBLE);
-                loadedSuccess.setVisibility(View.GONE);
-                loadedError.setVisibility(View.GONE);
-                btnLoadFile.setVisibility(View.VISIBLE);
-                btnConvert.setVisibility(View.GONE);
-                btnReset.setVisibility(View.GONE);
-            }
+        btnReset.setOnClickListener(view -> {
+            loadedNone.setVisibility(View.VISIBLE);
+            loadedSuccess.setVisibility(View.GONE);
+            loadedError.setVisibility(View.GONE);
+            btnLoadFile.setVisibility(View.VISIBLE);
+            btnConvert.setVisibility(View.GONE);
+            btnReset.setVisibility(View.GONE);
         });
 
 
@@ -238,17 +194,43 @@ public class MainActivity extends Activity {
 
     private void setDev(boolean checked) {
         isDev = checked;
+        toolbar.getMenu().getItem(0).setChecked(checked);
+        toolbar.getMenu().getItem(0).setVisible(checked);
         if (checked) {
             devHint.setVisibility(View.VISIBLE);
             dwContent.setVisibility(View.VISIBLE);
             icsContent.setVisibility(View.VISIBLE);
-            toolbar.getMenu().getItem(0).setVisible(true);
         } else {
             devHint.setVisibility(View.GONE);
             dwContent.setVisibility(View.GONE);
             icsContent.setVisibility(View.GONE);
-            toolbar.getMenu().getItem(0).setVisible(false);
         }
+
+        SharedPreferences prefs = getSharedPreferences(getString(R.string.sharedPrefs), Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean("DevMode", checked);
+        editor.apply();
+        Toast.makeText(MainActivity.this, checked ? "You're now a developer!" : "You're not a developer anymore!", Toast.LENGTH_SHORT).show();
+    }
+
+    private void setDevWithoutToast(boolean checked) {
+        isDev = checked;
+        toolbar.getMenu().getItem(0).setChecked(checked);
+        toolbar.getMenu().getItem(0).setVisible(checked);
+        if (checked) {
+            devHint.setVisibility(View.VISIBLE);
+            dwContent.setVisibility(View.VISIBLE);
+            icsContent.setVisibility(View.VISIBLE);
+        } else {
+            devHint.setVisibility(View.GONE);
+            dwContent.setVisibility(View.GONE);
+            icsContent.setVisibility(View.GONE);
+        }
+
+        SharedPreferences prefs = getSharedPreferences(getString(R.string.sharedPrefs), Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean("DevMode", checked);
+        editor.apply();
     }
 
     @Override
@@ -262,14 +244,15 @@ public class MainActivity extends Activity {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private void handleFileIntent(Uri uri) {
         dwReader.resetData();
         dwReader.startConversion(this, uri);
         dwContent.setText(dwReader.fullFileString());
         icsContent.setText(dwReader.getCalendarICS());
-        if (dwReader.dw.size() > 0) {
+        if (DWReader.dw.size() > 0) {
 
-            loadedSuccess.setText("Week " + dwReader.weekNumber + " van jaar " + dwReader.yearNumber + " geladen!");
+            loadedSuccess.setText("Week " + DWReader.weekNumber + " van jaar " + DWReader.yearNumber + " geladen!");
             loadedSuccess.setVisibility(View.VISIBLE);
             loadedNone.setVisibility(View.GONE);
             loadedError.setVisibility(View.GONE);
@@ -280,32 +263,29 @@ public class MainActivity extends Activity {
 
             //Saves the file to a temporary location & offers it to the user using an intent.
             //Sends user to the Google Calendar app page on the play store if no calendar app is available.
-            btnConvert.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    try {
-                        File file = new File(getExternalFilesDir(null).getPath() + "/converted.ics"); // Null -> temp location
-                        FileOutputStream out = new FileOutputStream(file);
-                        OutputStreamWriter writer = new OutputStreamWriter(out);
+            btnConvert.setOnClickListener(view -> {
+                try {
+                    File file = new File(getExternalFilesDir(null).getPath() + "/converted.ics"); // Null -> temp location
+                    FileOutputStream out = new FileOutputStream(file);
+                    OutputStreamWriter writer = new OutputStreamWriter(out);
 
-                        writer.write(dwReader.getCalendarICS());
-                        writer.close();
-                        out.close();
+                    writer.write(dwReader.getCalendarICS());
+                    writer.close();
+                    out.close();
 
-                        Intent intent = new Intent(Intent.ACTION_VIEW);
-                        Uri uri = FileProvider.getUriForFile(MainActivity.this, getApplicationContext().getPackageName() + ".provider", file);
-                        intent.setDataAndType(uri, "text/calendar");
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    Uri uri1 = FileProvider.getUriForFile(MainActivity.this, getApplicationContext().getPackageName() + ".provider", file);
+                    intent.setDataAndType(uri1, "text/calendar");
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-                        startActivity(intent);
-                    } catch (ActivityNotFoundException e) {
-                        Toast.makeText(MainActivity.this, "Please install a calendar app.", Toast.LENGTH_SHORT).show();
-                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=com.google.android.calendar")));
-                    } catch (IOException e) {
-                        Toast.makeText(MainActivity.this, "An error occurred.", Toast.LENGTH_SHORT).show();
-                        e.printStackTrace();
-                    }
+                    startActivity(intent);
+                } catch (ActivityNotFoundException e) {
+                    Toast.makeText(MainActivity.this, "Please install a calendar app.", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=com.google.android.calendar")));
+                } catch (IOException e) {
+                    Toast.makeText(MainActivity.this, "An error occurred.", Toast.LENGTH_SHORT).show();
+                    e.printStackTrace();
                 }
             });
         } else {
