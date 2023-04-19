@@ -8,9 +8,13 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.SystemClock;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -62,7 +66,9 @@ public class MainActivity extends Activity {
         ImageView bgImageTrainLoc = findViewById(R.id.bgImageTrainLoc);
         ImageView bgImageTrainVelaro = findViewById(R.id.bgImageTrainVelaro);
 
-        int transparency = 50;
+
+        int nightModeFlags = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        int transparency = (nightModeFlags == Configuration.UI_MODE_NIGHT_YES) ? 50 : 110;
         bgImageTrainICM.setImageAlpha(transparency);
         bgImageTrainVIRM.setImageAlpha(transparency);
         bgImageTrainLoc.setImageAlpha(transparency);
@@ -73,12 +79,7 @@ public class MainActivity extends Activity {
         final int[] locPressedAmount = {0};
         toolbar.setOnClickListener(v -> {
             if (locPressedAmount[0] > 9) {
-                if (!isDev) {
-                    setDev(true);
-                    Toast.makeText(MainActivity.this, "You're now a developer!", Toast.LENGTH_SHORT).show();
-                } else
-                    setDev(false);
-
+                setDev(!isDev);
                 locPressedAmount[0] = 0;
             }
             locPressedAmount[0]++;
@@ -164,7 +165,38 @@ public class MainActivity extends Activity {
             editor13.apply();
         });
 
-        infoCard.setOnClickListener(view -> infoCard.setVisibility(View.GONE));
+        if (!prefs.contains("dismissedInfoCard")) {
+            Runnable clickRunnable = () -> {
+                if (infoCard.getVisibility() == View.GONE)
+                    return;
+
+                final long now = SystemClock.uptimeMillis();
+                final MotionEvent pressEvent = MotionEvent.obtain(now, now, MotionEvent.ACTION_DOWN, 0, 0, 0);
+                infoCard.dispatchTouchEvent(pressEvent);
+
+                new Handler().postDelayed(() -> {
+                    final long now1 = SystemClock.uptimeMillis();
+                    final MotionEvent cancelEvent = MotionEvent.obtain(now1, now1, MotionEvent.ACTION_CANCEL, 0, 0, 0);
+                    infoCard.dispatchTouchEvent(cancelEvent);
+                }, 250);
+
+            };
+
+            infoCard.postDelayed(clickRunnable, 5000);
+            infoCard.postDelayed(clickRunnable, 10000);
+            infoCard.postDelayed(clickRunnable, 15000);
+            infoCard.postDelayed(clickRunnable, 20000);
+
+            infoCard.setOnClickListener(view -> {
+                infoCard.setVisibility(View.GONE);
+                SharedPreferences prefs12 = getSharedPreferences(getString(R.string.sharedPrefs), Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor12 = prefs12.edit();
+                editor12.putBoolean("dismissedInfoCard", true);
+                editor12.apply();
+            });
+        } else {
+            infoCard.setVisibility(View.GONE);
+        }
 
         btnReset.setOnClickListener(view -> {
             loadedNone.setVisibility(View.VISIBLE);

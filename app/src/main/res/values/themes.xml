@@ -34,6 +34,7 @@
         <item name="harmonizeSuccess">true</item>
         <item name="android:statusBarColor">?attr/colorSurface</item>
         <item name="android:windowLightStatusBar">?attr/isLightTheme</item>
+        <item name="android:windowLightNavigationBar">?attr/isLightTheme</item>
 
     </style>
 </resources>
