@@ -58,7 +58,7 @@ public class DWReader {
     private static Shift fridayShift = new Shift();
     private static Shift saturdayShift = new Shift();
     private static Shift sundayShift = new Shift();
-    private static Staff staff = new Staff();
+    private static final Staff staff = new Staff();
     public Context context;
 
     public DWReader(Context context) {
@@ -153,11 +153,11 @@ public class DWReader {
      * number/letters, 3=starttime formatted to 24:60, 4=endtime formatted
      * to 24:60, 5=profession, 6=location
      *
-     * @param context
+     * @param context app context used for sending toasts
      */
     @SuppressWarnings("deprecation")
     private static void processFile(Context context) {
-        SimpleDateFormat format = new SimpleDateFormat("HH:mm");
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat format = new SimpleDateFormat("HH:mm");
         java.util.Date date1;
         java.util.Date date2;
         Calendar cal1 = Calendar.getInstance();
@@ -180,7 +180,7 @@ public class DWReader {
             yearNumber = Integer.parseInt(dateYear[1]);
 
             // Second line - empty for formatting purposes
-            String emptyLineOne = fileContents[1].replaceAll("\\s+", " ");
+            //String emptyLineOne = fileContents[1].replaceAll("\\s+", " ");
 
             // Third line - staff number
             String staffNumberLine = fileContents[2].replaceAll("\\s+", " ");
@@ -197,13 +197,13 @@ public class DWReader {
             sundayShift.setStaff(staff);
 
             // Fourth line - empty for formatting purposes
-            String emptyLineTwo = fileContents[3].replaceAll("\\s+", " ");
+            //String emptyLineTwo = fileContents[3].replaceAll("\\s+", " ");
 
             // Fifth line - headers for formatting
-            String headersLine = fileContents[4].replaceAll("\\s+", " ");
+            //String headersLine = fileContents[4].replaceAll("\\s+", " ");
 
             // Sixth line - lines underneath headers, also worthless
-            String underscoresLine = fileContents[5].replaceAll("\\s+", " ");
+            //String underscoresLine = fileContents[5].replaceAll("\\s+", " ");
 
             Log.d(TAG, "DW FOR " + staffNumberLine + ":");
             Log.d(TAG, "//////////// START WEEK " + weekNumber + " OF " + yearNumber + " ////////////");
@@ -245,7 +245,7 @@ public class DWReader {
                 mondayTitle = mondayShiftNumber;
             else if (mondayArray.length == 5)
                 mondayTitle = mondayShiftNumber + " " + mondayStartTime + "-" + mondayEndTime;
-            else if (mondayModifier != "-1")
+            else if (!mondayModifier.equals("-1"))
                 mondayTitle = mondayProfession + " " + mondayLocation + " " + mondayModifier + "" + mondayShiftNumber
                         + " " + mondayStartTime + "-" + mondayEndTime;
             else
@@ -341,7 +341,7 @@ public class DWReader {
             if (tuesdayArray.length <= 3 || tuesdayArray[2].contains("R"))
                 Log.d(TAG, "Staff " + tuesdayShift.getStaff().getStaffName() + " is free on tuesday.");
             else {
-                String tuesdayStartDate = "";
+                String tuesdayStartDate;
                 if ((weekNumber == 52 || weekNumber == 53) && tuesdayMonth == 1) {// we passed newyear's
                     tuesdayStartDate = "" + tuesdayDay + "-" + tuesdayMonth + "-" + yearNumber + 1 + " "
                             + tuesdayStartTime + "";
@@ -807,6 +807,7 @@ public class DWReader {
      * Puts all the shift details from their respective objects in to an iCalendar String using biWeekly.
      * @return the full, completed iCalendar String.
      */
+    @SuppressLint("SimpleDateFormat")
     public String getCalendarICS() {
         SharedPreferences prefs = context.getSharedPreferences(context.getString(R.string.sharedPrefs), Context.MODE_PRIVATE);
         boolean displayModifiers = prefs.getBoolean("displayModifiers", true);
