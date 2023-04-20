@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".AboutActivity">
+
+    <ImageView
+        android:id="@+id/bgImageCalendarAbout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:layout_marginEnd="-40dp"
+        android:src="@drawable/ic_baseline_calendar_bg_150"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:alpha="50"
+        android:contentDescription="@string/background_image" />
+
+    <ImageView
+        android:id="@+id/bgImageTrainICMAbout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="-40dp"
+        android:src="@drawable/train_icm"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:alpha="50"
+        android:contentDescription="@string/background_image" />
+
+    <ImageView
+        android:id="@+id/bgImageTrainVIRMAbout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="-180dp"
+        android:layout_marginBottom="11dp"
+        android:alpha="50"
+        android:src="@drawable/train_virm"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="@+id/bgImageTrainVelaroAbout"
+        android:contentDescription="@string/background_image" />
+
+    <ImageView
+        android:id="@+id/bgImageTrainLocAbout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        android:layout_marginEnd="-135dp"
+        android:scaleX="-1"
+        android:alpha="50"
+        android:src="@drawable/train_loc"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/bgImageTrainVelaroAbout"
+        android:contentDescription="@string/background_image" />
+
+    <ImageView
+        android:id="@+id/bgImageTrainVelaroAbout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        android:layout_marginEnd="-60dp"
+        android:scaleX="-1"
+        android:alpha="50"
+        android:src="@drawable/train_velaro"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:contentDescription="@string/background_image" />
+
+    <ImageView
+        android:id="@+id/bgImageClockAbout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="-50dp"
+        android:layout_marginBottom="20dp"
+        android:alpha="50"
+        android:scaleX="-1"
+        android:src="@drawable/ic_outline_access_time_180"
+        app:layout_constraintBottom_toTopOf="@id/bgImageTrainVIRMAbout"
+        app:layout_constraintStart_toStartOf="parent"
+        android:contentDescription="@string/background_image" />
+
+    <ScrollView
+        tools:context=".MainActivity"
+        android:id="@+id/mainView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:elevation="1dp"
+        android:scrollbarSize="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:animateLayoutChanges="true"
+            android:orientation="vertical">
+
+            <com.google.android.material.appbar.MaterialToolbar
+                android:id="@+id/toolbarAbout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:title="Over app"
+                app:titleTextColor="?attr/colorOnSecondaryContainer"
+                app:titleTextAppearance="@style/TextAppearance.Material3.DisplaySmall"
+                app:navigationIcon="@drawable/ic_baseline_arrow_back_30"
+                android:layout_marginTop="60dp"
+                android:layout_marginBottom="10dp" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/settingsCard"
+                android:layout_width="350dp"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="30dp"
+                app:cardBackgroundColor="?attr/colorSurface"
+                app:strokeColor="?attr/colorSurfaceContainerHigh"
+                app:strokeWidth="1dp"
+                app:cardElevation="0dp"
+                app:cardCornerRadius="15dp"
+                android:layout_marginBottom="20dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="10dp"
+                    android:gravity="center_horizontal">
+
+                    <ImageView
+                        android:id="@+id/appBadgeImage"
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
+                        android:layout_marginBottom="10dp"
+                        android:src="@drawable/mijndw_icon"
+                        android:contentDescription="@string/app_icoon"
+
+                        tools:ignore="UseAppTint" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
+                        android:textColor="?attr/colorOnPrimaryContainer"
+                        android:text="@string/app_name" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="10dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                            android:text="Versie "
+                            tools:ignore="HardcodedText" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                            android:text="@string/app_version" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                            android:text=" Alpha"
+                            tools:ignore="HardcodedText" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:id="@+id/divider"
+                        android:layout_width="match_parent"
+                        android:layout_height="20dp"
+                        android:src="@drawable/rail_divider"
+                        android:tint="?attr/colorPrimary"
+                        android:alpha="0.2"
+                        tools:ignore="UseAppTint"
+                        android:contentDescription="@string/divider_in_the_shape" />
+
+                    <TextView
+                        android:id="@+id/textView1h"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:drawableLeft="@drawable/ic_baseline_info_16"
+                        android:drawablePadding="2dp"
+                        android:paddingTop="10dp"
+                        android:drawableTint="?attr/colorOnSecondaryContainer"
+                        android:gravity="center_vertical"
+                        android:text="@string/over_deze_app"
+                        android:textColor="?attr/colorOnSecondaryContainer"
+                        style="@style/TextAppearance.Material3.TitleSmall"
+                        tools:ignore="RtlHardcoded,UseCompatTextViewDrawableXml" />
+
+                    <TextView
+                        android:id="@+id/textView1"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingBottom="10dp"
+                        android:text="@string/welcomeInfo"
+                        android:textSize="14sp" />
+
+                    <ImageView
+                        android:id="@+id/divider2"
+                        android:layout_width="match_parent"
+                        android:layout_height="20dp"
+                        android:src="@drawable/rail_divider"
+                        android:tint="?attr/colorPrimary"
+                        android:alpha="0.2"
+                        tools:ignore="UseAppTint"
+                        android:contentDescription="@string/divider_in_the_shape" />
+
+                    <TextView
+                        android:id="@+id/textView2h"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:drawableLeft="@drawable/ic_baseline_warning_16"
+                        android:drawablePadding="2dp"
+                        android:drawableTint="?attr/colorOnSecondaryContainer"
+                        android:gravity="center_vertical"
+                        android:paddingTop="10dp"
+                        android:text="@string/disclaimer"
+                        android:textColor="?attr/colorOnSecondaryContainer"
+                        style="@style/TextAppearance.Material3.TitleSmall"
+                        tools:ignore="RtlHardcoded,UseCompatTextViewDrawableXml" />
+
+                    <TextView
+                        android:id="@+id/textViewPrivacyNotice"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingBottom="10dp"
+                        android:text="@string/privacy_notice_text"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/textView2"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingBottom="10dp"
+                        android:text="@string/not_affiliatied_text"
+                        android:textSize="14sp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/privacyButtonAbout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:layout_gravity="center_horizontal"
+                        android:backgroundTint="?attr/colorPrimaryContainer"
+                        android:drawableLeft="@drawable/ic_baseline_privacy_tip_16"
+                        android:drawableTint="?attr/colorOnPrimaryContainer"
+                        android:text="@string/privacyverklaring"
+                        android:textColor="?attr/colorOnPrimaryContainer"
+                        app:cornerRadius="20dp"
+                        tools:ignore="RtlHardcoded" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/emailButtonAbout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:backgroundTint="?attr/colorPrimaryContainer"
+                        android:drawableLeft="@drawable/ic_outline_email_16"
+                        android:drawableTint="?attr/colorOnPrimaryContainer"
+                        android:text="@string/email_ontwikkelaar"
+                        android:textColor="?attr/colorOnPrimaryContainer"
+                        app:cornerRadius="20dp"
+                        tools:ignore="RtlHardcoded" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+    </ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

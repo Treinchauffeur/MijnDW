@@ -71,13 +71,13 @@ public class MainActivity extends Activity {
         SharedPreferences.Editor editor = prefs.edit();
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
         toolbar = findViewById(R.id.toolbar);
-        ImageView bgImage = findViewById(R.id.bgImageCalendar);
+
+        ImageView bgImageCalendar = findViewById(R.id.bgImageCalendar);
         ImageView bgImageClock = findViewById(R.id.bgImageClock);
         ImageView bgImageTrainICM = findViewById(R.id.bgImageTrainICM);
         ImageView bgImageTrainVIRM = findViewById(R.id.bgImageTrainVIRM);
         ImageView bgImageTrainLoc = findViewById(R.id.bgImageTrainLoc);
         ImageView bgImageTrainVelaro = findViewById(R.id.bgImageTrainVelaro);
-
 
         int nightModeFlags = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
         int transparency = (nightModeFlags == Configuration.UI_MODE_NIGHT_YES) ? 50 : 110;
@@ -85,7 +85,7 @@ public class MainActivity extends Activity {
         bgImageTrainVIRM.setImageAlpha(transparency);
         bgImageTrainLoc.setImageAlpha(transparency);
         bgImageTrainVelaro.setImageAlpha(transparency);
-        bgImage.setImageAlpha(transparency);
+        bgImageCalendar.setImageAlpha(transparency);
         bgImageClock.setImageAlpha(transparency);
 
 
@@ -105,6 +105,7 @@ public class MainActivity extends Activity {
         showModifiers = findViewById(R.id.modifiersCheckBox);
         fullDaysOnly = findViewById(R.id.wholeDayCheckBox);
 
+
         toolbar.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.devMode) {
                 item.setChecked(!item.isChecked());
@@ -117,6 +118,10 @@ public class MainActivity extends Activity {
                 emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Over: Mijn DW");
                 emailIntent.putExtra(Intent.EXTRA_TEXT, "Mijn DW versie " + BuildConfig.VERSION_NAME);
                 startActivity(Intent.createChooser(emailIntent, "E-mail versturen.."));
+            }
+            if (item.getItemId() == R.id.aboutApp) {
+                Intent aboutIntent = new Intent(MainActivity.this, AboutActivity.class);
+                startActivity(aboutIntent);
             }
             return false;
         });
@@ -234,7 +239,7 @@ public class MainActivity extends Activity {
         ImageView bgImageTrainLoc = findViewById(R.id.bgImageTrainLoc);
         ImageView bgImageTrainVelaro = findViewById(R.id.bgImageTrainVelaro);
         int minStartDelay = 0, maxStartDelay = 3000;
-        int minTrainPassTime = 5000, maxTrainPassTime = 15000;
+        int minTrainPassTime = 2000, maxTrainPassTime = 18000;
 
         ObjectAnimator animationICM = ObjectAnimator.ofFloat(bgImageTrainICM, "translationX", 0f);
         animationICM.setDuration(MiscTools.generateRandomNumber(minTrainPassTime, maxTrainPassTime));

@@ -3,8 +3,11 @@
     <item
         android:checkable="true"
         android:id="@+id/devMode"
-        android:title="Informatie voor ontwikkelaars" />
+        android:title="@string/informatie_voor_ontwikkelaars" />
     <item
         android:id="@+id/mailDev"
-        android:title="Stuur mail naar ontwikkelaar" />
+        android:title="@string/email_ontwikkelaar" />
+    <item
+        android:id="@+id/aboutApp"
+        android:title="@string/over_deze_app" />
 </menu>
