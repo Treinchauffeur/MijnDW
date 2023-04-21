@@ -1,6 +1,7 @@
 package com.treinchauffeur.mijndw;
 
 
+import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -20,6 +21,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -54,6 +56,8 @@ public class MainActivity extends Activity {
     MaterialSwitch showProfession, showModifiers, fullDaysOnly;
     MaterialToolbar toolbar;
     private boolean isAnimating = false;
+    boolean icmIsMoving = false, icmIsLeft = true;
+    boolean velaroIsMoving = false, velaroIsLeft = false;
 
     /**
      * Starting up the app, loading the layout including all the views.
@@ -241,13 +245,6 @@ public class MainActivity extends Activity {
         int minStartDelay = 0, maxStartDelay = 3000;
         int minTrainPassTime = 2000, maxTrainPassTime = 18000;
 
-        ObjectAnimator animationICM = ObjectAnimator.ofFloat(bgImageTrainICM, "translationX", 0f);
-        animationICM.setDuration(MiscTools.generateRandomNumber(minTrainPassTime, maxTrainPassTime));
-        animationICM.setInterpolator(new AccelerateDecelerateInterpolator());
-        bgImageTrainICM.setX(-1500f);
-        Runnable icmRunnable = animationICM::start;
-        bgImageTrainICM.postDelayed(icmRunnable, MiscTools.generateRandomNumber(minStartDelay, maxStartDelay));
-
         ObjectAnimator animationVIRM = ObjectAnimator.ofFloat(bgImageTrainVIRM, "translationX", 0f);
         animationVIRM.setDuration(MiscTools.generateRandomNumber(minTrainPassTime, maxTrainPassTime));
         animationVIRM.setInterpolator(new AccelerateDecelerateInterpolator());
@@ -262,12 +259,6 @@ public class MainActivity extends Activity {
         Runnable locRunnable = animationLoc::start;
         bgImageTrainLoc.postDelayed(locRunnable, MiscTools.generateRandomNumber(minStartDelay, maxStartDelay));
 
-        ObjectAnimator animationVelaro = ObjectAnimator.ofFloat(bgImageTrainVelaro, "translationX", 0f);
-        animationVelaro.setDuration(MiscTools.generateRandomNumber(minTrainPassTime, maxTrainPassTime));
-        animationVelaro.setInterpolator(new AccelerateDecelerateInterpolator());
-        bgImageTrainVelaro.setX(1500f);
-        Runnable velaroRunnable = animationVelaro::start;
-        bgImageTrainVelaro.postDelayed(velaroRunnable, MiscTools.generateRandomNumber(minStartDelay, maxStartDelay));
 
         if (infoCard.getVisibility() == View.VISIBLE) {
             Runnable animationRunnable = () -> {
@@ -293,6 +284,157 @@ public class MainActivity extends Activity {
             infoCard.postDelayed(animationRunnable, 20000);
             infoCard.postDelayed(animationRunnable, 25000);
             infoCard.postDelayed(finalRunnable, 27000);
+
+            Handler trainMoveHandler = new Handler();
+            Runnable trainMover = new Runnable() {
+                @Override
+                public void run() {
+                    if (MiscTools.generateRandomNumber(0, 1) == 1) {
+                        if (!velaroIsMoving) moveVelaro(bgImageTrainVelaro);
+                        else if (!icmIsMoving) moveIcm(bgImageTrainICM);
+                    } else {
+                        if (!icmIsMoving) moveIcm(bgImageTrainICM);
+                        else if (!velaroIsMoving) moveVelaro(bgImageTrainVelaro);
+                    }
+                    trainMoveHandler.postDelayed(this, MiscTools.generateRandomNumber(1000, 3000));
+                }
+            };
+
+            bgImageTrainVelaro.postDelayed(trainMover, MiscTools.generateRandomNumber(1000, 3000));
+
+            //Start moving them initially
+            moveVelaro(bgImageTrainVelaro);
+            moveIcm(bgImageTrainICM);
+        }
+    }
+
+    private void moveVelaro(ImageView bgImageTrainVelaro) {
+        int velaroMinSpeed = 7000, velaroMaxSpeed = 15000;
+        if (velaroIsMoving) return;
+
+        if (!velaroIsLeft) {
+            ObjectAnimator moveVelaroToLeft = ObjectAnimator.ofFloat(bgImageTrainVelaro, "translationX", 0f);
+            moveVelaroToLeft.setDuration(MiscTools.generateRandomNumber(velaroMinSpeed, velaroMaxSpeed));
+            moveVelaroToLeft.setInterpolator(new LinearInterpolator());
+            moveVelaroToLeft.addListener(new Animator.AnimatorListener() {
+                @Override
+                public void onAnimationStart(Animator animation) {
+                    velaroIsMoving = true;
+                }
+
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    velaroIsMoving = false;
+                    velaroIsLeft = true;
+                }
+
+                @Override
+                public void onAnimationCancel(Animator animation) {
+                    velaroIsMoving = false;
+                }
+
+                @Override
+                public void onAnimationRepeat(Animator animation) {
+
+                }
+            });
+            bgImageTrainVelaro.setX(5000f);
+            Runnable velaroRunnable = moveVelaroToLeft::start;
+            bgImageTrainVelaro.postDelayed(velaroRunnable, MiscTools.generateRandomNumber(0, 1000));
+        } else {
+            ObjectAnimator moveVelaroToLeft = ObjectAnimator.ofFloat(bgImageTrainVelaro, "translationX", 5000f);
+            moveVelaroToLeft.setDuration(MiscTools.generateRandomNumber(velaroMinSpeed, velaroMaxSpeed));
+            moveVelaroToLeft.setInterpolator(new LinearInterpolator());
+            moveVelaroToLeft.addListener(new Animator.AnimatorListener() {
+                @Override
+                public void onAnimationStart(Animator animation) {
+                    velaroIsMoving = true;
+                }
+
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    velaroIsMoving = false;
+                    velaroIsLeft = false;
+                }
+
+                @Override
+                public void onAnimationCancel(Animator animation) {
+                    velaroIsMoving = false;
+                }
+
+                @Override
+                public void onAnimationRepeat(Animator animation) {
+
+                }
+            });
+            bgImageTrainVelaro.setX(-5000f);
+            Runnable velaroRunnable = moveVelaroToLeft::start;
+            bgImageTrainVelaro.postDelayed(velaroRunnable, MiscTools.generateRandomNumber(0, 1000));
+        }
+    }
+
+    private void moveIcm(ImageView bgImageTrainICM) {
+        int icmMinSpeed = 11000, icmMaxSpeed = 21000;
+        if (icmIsMoving) return;
+
+        if (!icmIsLeft) {
+            ObjectAnimator moveIcmToLeft = ObjectAnimator.ofFloat(bgImageTrainICM, "translationX", 0f);
+            moveIcmToLeft.setDuration(MiscTools.generateRandomNumber(icmMinSpeed, icmMaxSpeed));
+            moveIcmToLeft.setInterpolator(new LinearInterpolator());
+            moveIcmToLeft.addListener(new Animator.AnimatorListener() {
+                @Override
+                public void onAnimationStart(Animator animation) {
+                    icmIsMoving = true;
+                }
+
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    icmIsMoving = false;
+                    icmIsLeft = true;
+                }
+
+                @Override
+                public void onAnimationCancel(Animator animation) {
+                    velaroIsMoving = false;
+                }
+
+                @Override
+                public void onAnimationRepeat(Animator animation) {
+
+                }
+            });
+            bgImageTrainICM.setX(5000f);
+            Runnable velaroRunnable = moveIcmToLeft::start;
+            bgImageTrainICM.postDelayed(velaroRunnable, MiscTools.generateRandomNumber(0, 1000));
+        } else {
+            ObjectAnimator moveIcmToLeft = ObjectAnimator.ofFloat(bgImageTrainICM, "translationX", 5000f);
+            moveIcmToLeft.setDuration(MiscTools.generateRandomNumber(icmMinSpeed, icmMaxSpeed));
+            moveIcmToLeft.setInterpolator(new LinearInterpolator());
+            moveIcmToLeft.addListener(new Animator.AnimatorListener() {
+                @Override
+                public void onAnimationStart(Animator animation) {
+                    icmIsMoving = true;
+                }
+
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    icmIsMoving = false;
+                    icmIsLeft = false;
+                }
+
+                @Override
+                public void onAnimationCancel(Animator animation) {
+                    icmIsMoving = false;
+                }
+
+                @Override
+                public void onAnimationRepeat(Animator animation) {
+
+                }
+            });
+            bgImageTrainICM.setX(-5000f);
+            Runnable icmRunnable = moveIcmToLeft::start;
+            bgImageTrainICM.postDelayed(icmRunnable, MiscTools.generateRandomNumber(0, 1000));
         }
     }
 
@@ -433,7 +575,6 @@ public class MainActivity extends Activity {
      */
     @Override
     protected void onResume() {
-        performAnimations();
         super.onResume();
     }
 }

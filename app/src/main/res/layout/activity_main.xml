@@ -13,22 +13,22 @@
         android:id="@+id/bgImageCalendar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="10dp"
         android:layout_marginEnd="-40dp"
         android:src="@drawable/ic_baseline_calendar_bg_150"
         app:layout_constraintEnd_toEndOf="@+id/mainView"
-        app:layout_constraintTop_toTopOf="@+id/mainView"
+        app:layout_constraintTop_toBottomOf="@+id/bgImageTrainICM"
         android:alpha="50"
         android:contentDescription="@string/background_image" />
 
     <ImageView
         android:id="@+id/bgImageTrainICM"
-        android:layout_width="wrap_content"
+        android:layout_width="1000dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:layout_marginStart="-40dp"
-        android:src="@drawable/train_icm"
-        app:layout_constraintStart_toStartOf="@+id/mainView"
+        android:layout_marginEnd="40dp"
+        android:src="@drawable/train_icm_long"
+        app:layout_constraintEnd_toStartOf="@+id/mainView"
         app:layout_constraintTop_toTopOf="@+id/mainView"
         android:alpha="50"
         android:contentDescription="@string/background_image" />
@@ -37,13 +37,12 @@
         android:id="@+id/bgImageTrainVIRM"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:layout_marginStart="-180dp"
-        android:layout_marginBottom="11dp"
+        android:layout_marginTop="40dp"
+        android:layout_marginEnd="-60dp"
         android:alpha="50"
         android:src="@drawable/train_virm"
-        app:layout_constraintStart_toStartOf="@+id/mainView"
-        app:layout_constraintBottom_toBottomOf="@+id/bgImageTrainVelaro"
+        app:layout_constraintEnd_toStartOf="@+id/mainView"
+        app:layout_constraintBottom_toBottomOf="@+id/bgImageTrainLoc"
         android:contentDescription="@string/background_image" />
 
     <ImageView
@@ -51,24 +50,24 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="20dp"
-        android:layout_marginEnd="-135dp"
+        android:layout_marginStart="-75dp"
         android:scaleX="-1"
         android:alpha="50"
         android:src="@drawable/train_loc"
-        app:layout_constraintEnd_toEndOf="@+id/mainView"
+        app:layout_constraintStart_toEndOf="@+id/mainView"
         app:layout_constraintBottom_toTopOf="@id/bgImageTrainVelaro"
         android:contentDescription="@string/background_image" />
 
     <ImageView
         android:id="@+id/bgImageTrainVelaro"
-        android:layout_width="wrap_content"
+        android:layout_width="1000dp"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="50dp"
         android:layout_marginBottom="20dp"
-        android:layout_marginEnd="-60dp"
         android:scaleX="-1"
         android:alpha="50"
-        android:src="@drawable/train_velaro"
-        app:layout_constraintEnd_toEndOf="@+id/mainView"
+        android:src="@drawable/train_velaro_long"
+        app:layout_constraintEnd_toStartOf="@+id/mainView"
         app:layout_constraintBottom_toBottomOf="@id/mainView"
         android:contentDescription="@string/background_image" />
 
@@ -76,12 +75,13 @@
         android:id="@+id/bgImageClock"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="-40dp"
         android:layout_marginStart="-50dp"
         android:layout_marginBottom="20dp"
         android:alpha="50"
         android:scaleX="-1"
         android:src="@drawable/ic_outline_access_time_180"
-        app:layout_constraintBottom_toTopOf="@id/bgImageTrainVIRM"
+        app:layout_constraintTop_toBottomOf="@id/bgImageCalendar"
         app:layout_constraintStart_toStartOf="@+id/mainView"
         android:contentDescription="@string/background_image" />
 
