@@ -52,9 +52,7 @@ public class AboutActivity extends Activity {
         });
 
         MaterialButton privacyButton = findViewById(R.id.privacyButtonAbout);
-        privacyButton.setOnClickListener(v -> {
-            startActivity(new Intent(Intent.ACTION_VIEW,
-                    Uri.parse("https://github.com/LeonKlaczynski/MijnDW/blob/master/Privacy%20Policy")));
-        });
+        privacyButton.setOnClickListener(v -> startActivity(new Intent(Intent.ACTION_VIEW,
+                Uri.parse("https://github.com/treinchauffeur/MijnDW/blob/master/Privacy%20Policy"))));
     }
 }

@@ -8,66 +8,38 @@ import java.util.Date;
  */
 
 public class Shift {
-    /** TODO Known modifiers for Regio Twente:
-     *
-     * # Guaranteed
-     * > Pupil
-     * E Extra
-     * *
-     * !
-     * @
-     */
-
     private Staff staff;
     private int weekNumber;
     private int yearNumber;
-    private Date baseDate; //used for R (rest / day off) days
     private Date startTime;
-    private Date endTime;
     private String shiftNumber;
     private String shiftNumberModifier;
     private String profession;
     private String location;
-    private boolean isFree;
     private int lengthHours, lengthMinutes;
     private long startMillis, endMillis;
 
-    public Shift(Staff staff, int weekNumber, int yearNumber, Date baseDate, Date startTime, Date endTime, String shiftNumber,
-                 String shiftNumberModifier, String profession, String location) {
-        super();
-        this.staff = staff;
-        this.weekNumber = weekNumber;
-        this.yearNumber = yearNumber;
-        this.baseDate = baseDate;
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.shiftNumber = shiftNumber;
-        this.shiftNumberModifier = shiftNumberModifier;
-        this.profession = profession;
-        this.location = location;
-    }
+    private String rawString;
 
     public Shift() {
         super();
         this.staff = null;
         this.weekNumber = -1;
         this.yearNumber = -1;
-        this.baseDate = new Date();
         this.startTime = new Date();
-        this.endTime = new Date();
         this.shiftNumber = "!!!";
         this.shiftNumberModifier = "!!!";
         this.profession = "!!!";
         this.location = "!!!";
+        this.rawString = "!!!";
     }
 
+    public String getRawString() {
+        return rawString;
+    }
 
-
-    /**
-     * @return the weekNumber
-     */
-    public int getWeekNumber() {
-        return weekNumber;
+    public void setRawString(String rawString) {
+        this.rawString = rawString;
     }
 
     /**
@@ -78,31 +50,10 @@ public class Shift {
     }
 
     /**
-     * @return the yearNumber
-     */
-    public int getYearNumber() {
-        return yearNumber;
-    }
-
-    /**
      * @param yearNumber the yearNumber to set
      */
     public void setYearNumber(int yearNumber) {
         this.yearNumber = yearNumber;
-    }
-
-    /**
-     * @return the baseDate
-     */
-    public Date getBaseDate() {
-        return baseDate;
-    }
-
-    /**
-     * @param baseDate the baseDate to set
-     */
-    public void setBaseDate(Date baseDate) {
-        this.baseDate = baseDate;
     }
 
     /**
@@ -117,20 +68,6 @@ public class Shift {
      */
     public void setStartTime(Date startTime) {
         this.startTime = startTime;
-    }
-
-    /**
-     * @return the endTime
-     */
-    public Date getEndTime() {
-        return endTime;
-    }
-
-    /**
-     * @param endTime the endTime to set
-     */
-    public void setEndTime(Date endTime) {
-        this.endTime = endTime;
     }
 
     /**
@@ -248,4 +185,11 @@ public class Shift {
     }
 
 
+    public int getWeekNumber() {
+        return weekNumber;
+    }
+
+    public int getYearNumber() {
+        return yearNumber;
+    }
 }
