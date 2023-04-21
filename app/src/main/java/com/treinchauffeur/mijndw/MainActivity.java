@@ -259,31 +259,33 @@ public class MainActivity extends Activity {
         Runnable locRunnable = animationLoc::start;
         bgImageTrainLoc.postDelayed(locRunnable, MiscTools.generateRandomNumber(minStartDelay, maxStartDelay));
 
-
         if (infoCard.getVisibility() == View.VISIBLE) {
-            Runnable animationRunnable = () -> {
-                if (infoCard.getVisibility() == View.GONE)
-                    return;
+            final int[] i = {0};
+            int max = 5;
+            Runnable animationRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    if (infoCard.getVisibility() == View.GONE)
+                        return;
 
-                final long now = SystemClock.uptimeMillis();
-                final MotionEvent pressEvent = MotionEvent.obtain(now, now, MotionEvent.ACTION_DOWN, 0, 0, 0);
-                infoCard.dispatchTouchEvent(pressEvent);
+                    final long now = SystemClock.uptimeMillis();
+                    final MotionEvent pressEvent = MotionEvent.obtain(now, now, MotionEvent.ACTION_DOWN, 0, 0, 0);
+                    infoCard.dispatchTouchEvent(pressEvent);
+                    if (i[0] < max) {
+                        i[0]++;
+                        infoCard.postDelayed(this, 5000);
+                    } else {
+                        isAnimating = false;
+                    }
 
-                new Handler().postDelayed(() -> {
-                    final long now1 = SystemClock.uptimeMillis();
-                    final MotionEvent cancelEvent = MotionEvent.obtain(now1, now1, MotionEvent.ACTION_CANCEL, 0, 0, 0);
-                    infoCard.dispatchTouchEvent(cancelEvent);
-                }, 1000);
+                    new Handler().postDelayed(() -> {
+                        final long now1 = SystemClock.uptimeMillis();
+                        final MotionEvent cancelEvent = MotionEvent.obtain(now1, now1, MotionEvent.ACTION_CANCEL, 0, 0, 0);
+                        infoCard.dispatchTouchEvent(cancelEvent);
+                    }, 100);
+                }
             };
-
-            Runnable finalRunnable = () -> isAnimating = false;
-
             infoCard.postDelayed(animationRunnable, 5000);
-            infoCard.postDelayed(animationRunnable, 10000);
-            infoCard.postDelayed(animationRunnable, 15000);
-            infoCard.postDelayed(animationRunnable, 20000);
-            infoCard.postDelayed(animationRunnable, 25000);
-            infoCard.postDelayed(finalRunnable, 27000);
 
             Handler trainMoveHandler = new Handler();
             Runnable trainMover = new Runnable() {
@@ -313,7 +315,7 @@ public class MainActivity extends Activity {
         if (velaroIsMoving) return;
 
         if (!velaroIsLeft) {
-            ObjectAnimator moveVelaroToLeft = ObjectAnimator.ofFloat(bgImageTrainVelaro, "translationX", 0f);
+            @SuppressLint("Recycle") ObjectAnimator moveVelaroToLeft = ObjectAnimator.ofFloat(bgImageTrainVelaro, "translationX", 0f);
             moveVelaroToLeft.setDuration(MiscTools.generateRandomNumber(velaroMinSpeed, velaroMaxSpeed));
             moveVelaroToLeft.setInterpolator(new LinearInterpolator());
             moveVelaroToLeft.addListener(new Animator.AnimatorListener() {
@@ -342,7 +344,7 @@ public class MainActivity extends Activity {
             Runnable velaroRunnable = moveVelaroToLeft::start;
             bgImageTrainVelaro.postDelayed(velaroRunnable, MiscTools.generateRandomNumber(0, 1000));
         } else {
-            ObjectAnimator moveVelaroToLeft = ObjectAnimator.ofFloat(bgImageTrainVelaro, "translationX", 5000f);
+            @SuppressLint("Recycle") ObjectAnimator moveVelaroToLeft = ObjectAnimator.ofFloat(bgImageTrainVelaro, "translationX", 5000f);
             moveVelaroToLeft.setDuration(MiscTools.generateRandomNumber(velaroMinSpeed, velaroMaxSpeed));
             moveVelaroToLeft.setInterpolator(new LinearInterpolator());
             moveVelaroToLeft.addListener(new Animator.AnimatorListener() {
@@ -378,7 +380,7 @@ public class MainActivity extends Activity {
         if (icmIsMoving) return;
 
         if (!icmIsLeft) {
-            ObjectAnimator moveIcmToLeft = ObjectAnimator.ofFloat(bgImageTrainICM, "translationX", 0f);
+            @SuppressLint("Recycle") ObjectAnimator moveIcmToLeft = ObjectAnimator.ofFloat(bgImageTrainICM, "translationX", 0f);
             moveIcmToLeft.setDuration(MiscTools.generateRandomNumber(icmMinSpeed, icmMaxSpeed));
             moveIcmToLeft.setInterpolator(new LinearInterpolator());
             moveIcmToLeft.addListener(new Animator.AnimatorListener() {
@@ -407,7 +409,7 @@ public class MainActivity extends Activity {
             Runnable velaroRunnable = moveIcmToLeft::start;
             bgImageTrainICM.postDelayed(velaroRunnable, MiscTools.generateRandomNumber(0, 1000));
         } else {
-            ObjectAnimator moveIcmToLeft = ObjectAnimator.ofFloat(bgImageTrainICM, "translationX", 5000f);
+            @SuppressLint("Recycle") ObjectAnimator moveIcmToLeft = ObjectAnimator.ofFloat(bgImageTrainICM, "translationX", 5000f);
             moveIcmToLeft.setDuration(MiscTools.generateRandomNumber(icmMinSpeed, icmMaxSpeed));
             moveIcmToLeft.setInterpolator(new LinearInterpolator());
             moveIcmToLeft.addListener(new Animator.AnimatorListener() {
