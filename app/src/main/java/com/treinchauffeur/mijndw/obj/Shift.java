@@ -9,8 +9,6 @@ import java.util.Date;
 
 public class Shift {
     private Staff staff;
-    private int weekNumber;
-    private int yearNumber;
     private Date startTime;
     private String shiftNumber;
     private String shiftNumberModifier;
@@ -21,11 +19,13 @@ public class Shift {
 
     private String rawString;
 
+    /**
+     * A shift can have a number of values like the member of staff, a starting time, a number (or other shift title),
+     * a profession and more. We use these details to convert them to a .iCal file.
+     */
     public Shift() {
         super();
         this.staff = null;
-        this.weekNumber = -1;
-        this.yearNumber = -1;
         this.startTime = new Date();
         this.shiftNumber = "!!!";
         this.shiftNumberModifier = "!!!";
@@ -34,26 +34,20 @@ public class Shift {
         this.rawString = "!!!";
     }
 
+    /**
+     * @return the raw line string for that specific shift.
+     * This is used as the description of the calendar event.
+     */
     public String getRawString() {
         return rawString;
     }
 
+    /**
+     * Sets the raw line string for that specific shift.
+     * This is used as the description of the calendar event.
+     */
     public void setRawString(String rawString) {
         this.rawString = rawString;
-    }
-
-    /**
-     * @param weekNumber the weekNumber to set
-     */
-    public void setWeekNumber(int weekNumber) {
-        this.weekNumber = weekNumber;
-    }
-
-    /**
-     * @param yearNumber the yearNumber to set
-     */
-    public void setYearNumber(int yearNumber) {
-        this.yearNumber = yearNumber;
     }
 
     /**
@@ -182,14 +176,5 @@ public class Shift {
 
     public void setEndMillis(long endMillis) {
         this.endMillis = endMillis;
-    }
-
-
-    public int getWeekNumber() {
-        return weekNumber;
-    }
-
-    public int getYearNumber() {
-        return yearNumber;
     }
 }

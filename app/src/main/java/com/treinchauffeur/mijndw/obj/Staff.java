@@ -1,30 +1,22 @@
 package com.treinchauffeur.mijndw.obj;
 
-import java.util.ArrayList;
+import android.annotation.SuppressLint;
 
 /**
- *
  * @author Leonk
  * Defines a staff as an object
  */
-
 public class Staff {
 
     private String staffName;
     private int staffNumber;
-    private ArrayList<Shift> shifts;
 
-    public Staff(String staffName, int staffNumber, ArrayList<Shift> shifts) {
-        super();
-        this.staffName = staffName;
-        this.staffNumber = staffNumber;
-        this.shifts = shifts;
-    }
-
+    /**
+     * A staff member object has a name and a staff number.
+     */
     public Staff() {
         this.staffName = "";
         this.staffNumber = -1;
-        this.shifts = null;
     }
 
     /**
@@ -44,7 +36,8 @@ public class Staff {
     /**
      * @return the staffNumber
      */
-    public int getStaffNumber() {
+    @SuppressLint("UnusedResources")
+    protected int getStaffNumber() {
         return staffNumber;
     }
 

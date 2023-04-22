@@ -1,8 +1,6 @@
 package com.treinchauffeur.mijndw;
 
 
-import android.animation.Animator;
-import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
@@ -13,15 +11,10 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.PowerManager;
-import android.os.SystemClock;
-import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.view.animation.AccelerateDecelerateInterpolator;
-import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -33,8 +26,10 @@ import androidx.core.content.FileProvider;
 
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.materialswitch.MaterialSwitch;
-import com.treinchauffeur.mijndw.io.DWReader;
-import com.treinchauffeur.mijndw.misc.MiscTools;
+import com.treinchauffeur.mijndw.io.ShiftsFileReader;
+import com.treinchauffeur.mijndw.misc.Logger;
+import com.treinchauffeur.mijndw.ui.ContinuousBackgroundAnimator;
+import com.treinchauffeur.mijndw.ui.StartupBackgroundAnimator;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -44,20 +39,16 @@ import java.io.OutputStreamWriter;
 public class MainActivity extends Activity {
     public static final int PICK_FILE_REQUEST = 1312;
     public static final String TAG = "MainActivity";
-    private boolean isDev = false;
+    public static boolean isDev = false;
+
     ClipboardManager clipboard;
-
-    DWReader dwReader;
-
+    ShiftsFileReader shiftsFileReader;
     Button btnConvert, btnLoadFile, btnReset;
-    EditText dwContent, icsContent;
+    EditText shiftsFileContentView, iCalContentView;
     TextView loadedNone, loadedSuccess, loadedError, devHint;
     CardView infoCard, usageCard;
     MaterialSwitch showProfession, showModifiers, fullDaysOnly;
     MaterialToolbar toolbar;
-    private boolean isAnimating = false;
-    boolean icmIsMoving = false, icmIsLeft = true;
-    boolean velaroIsMoving = false, velaroIsLeft = false;
 
     /**
      * Starting up the app, loading the layout including all the views.
@@ -71,11 +62,11 @@ public class MainActivity extends Activity {
         clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
         SharedPreferences prefs = getSharedPreferences(getString(R.string.sharedPrefs), Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
-        toolbar = findViewById(R.id.toolbar);
 
+        toolbar = findViewById(R.id.toolbar);
         ImageView bgImageCalendar = findViewById(R.id.bgImageCalendar);
         ImageView bgImageClock = findViewById(R.id.bgImageClock);
         ImageView bgImageTrainICM = findViewById(R.id.bgImageTrainICM);
@@ -92,11 +83,10 @@ public class MainActivity extends Activity {
         bgImageCalendar.setImageAlpha(transparency);
         bgImageClock.setImageAlpha(transparency);
 
-
         //Loading all the UI elements
         devHint = findViewById(R.id.devHint);
-        dwContent = findViewById(R.id.dwContent);
-        icsContent = findViewById(R.id.icsContent);
+        shiftsFileContentView = findViewById(R.id.dwContent);
+        iCalContentView = findViewById(R.id.icsContent);
         btnLoadFile = findViewById(R.id.btnLoadFile);
         btnConvert = findViewById(R.id.btnConvertFile);
         btnReset = findViewById(R.id.btnReset);
@@ -108,7 +98,6 @@ public class MainActivity extends Activity {
         showProfession = findViewById(R.id.professionCheckBox);
         showModifiers = findViewById(R.id.modifiersCheckBox);
         fullDaysOnly = findViewById(R.id.wholeDayCheckBox);
-
 
         toolbar.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.devMode) {
@@ -210,7 +199,7 @@ public class MainActivity extends Activity {
         });
 
 
-        dwReader = new DWReader(this);
+        shiftsFileReader = new ShiftsFileReader(this);
 
         btnLoadFile.setOnClickListener(view -> {
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
@@ -226,6 +215,7 @@ public class MainActivity extends Activity {
         }
 
         performAnimations();
+
     }
 
     /**
@@ -234,210 +224,18 @@ public class MainActivity extends Activity {
      */
     @SuppressLint("Recycle")
     private void performAnimations() {
+        ViewGroup rootView = findViewById(R.id.parentView);
+        StartupBackgroundAnimator startupBackgroundAnimator = new StartupBackgroundAnimator(rootView, MainActivity.this);
+        ContinuousBackgroundAnimator continuousBackgroundAnimator = new ContinuousBackgroundAnimator(rootView, MainActivity.this);
+
         PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        if (powerManager.isPowerSaveMode() || isAnimating) return;
-        isAnimating = true;
-
-        ImageView bgImageTrainICM = findViewById(R.id.bgImageTrainICM);
-        ImageView bgImageTrainVIRM = findViewById(R.id.bgImageTrainVIRM);
-        ImageView bgImageTrainLoc = findViewById(R.id.bgImageTrainLoc);
-        ImageView bgImageTrainVelaro = findViewById(R.id.bgImageTrainVelaro);
-        int minStartDelay = 0, maxStartDelay = 3000;
-        int minTrainPassTime = 2000, maxTrainPassTime = 18000;
-
-        ObjectAnimator animationVIRM = ObjectAnimator.ofFloat(bgImageTrainVIRM, "translationX", 0f);
-        animationVIRM.setDuration(MiscTools.generateRandomNumber(minTrainPassTime, maxTrainPassTime));
-        animationVIRM.setInterpolator(new AccelerateDecelerateInterpolator());
-        bgImageTrainVIRM.setX(-1500f);
-        Runnable virmRunnable = animationVIRM::start;
-        bgImageTrainVIRM.postDelayed(virmRunnable, MiscTools.generateRandomNumber(minStartDelay, maxStartDelay));
-
-        ObjectAnimator animationLoc = ObjectAnimator.ofFloat(bgImageTrainLoc, "translationX", 0f);
-        animationLoc.setDuration(MiscTools.generateRandomNumber(minTrainPassTime, maxTrainPassTime));
-        animationLoc.setInterpolator(new AccelerateDecelerateInterpolator());
-        bgImageTrainLoc.setX(1500f);
-        Runnable locRunnable = animationLoc::start;
-        bgImageTrainLoc.postDelayed(locRunnable, MiscTools.generateRandomNumber(minStartDelay, maxStartDelay));
-
-        if (infoCard.getVisibility() == View.VISIBLE) {
-            final int[] i = {0};
-            int max = 5;
-            Runnable animationRunnable = new Runnable() {
-                @Override
-                public void run() {
-                    if (infoCard.getVisibility() == View.GONE)
-                        return;
-
-                    final long now = SystemClock.uptimeMillis();
-                    final MotionEvent pressEvent = MotionEvent.obtain(now, now, MotionEvent.ACTION_DOWN, 0, 0, 0);
-                    infoCard.dispatchTouchEvent(pressEvent);
-                    if (i[0] < max) {
-                        i[0]++;
-                        infoCard.postDelayed(this, 5000);
-                    } else {
-                        isAnimating = false;
-                    }
-
-                    new Handler().postDelayed(() -> {
-                        final long now1 = SystemClock.uptimeMillis();
-                        final MotionEvent cancelEvent = MotionEvent.obtain(now1, now1, MotionEvent.ACTION_CANCEL, 0, 0, 0);
-                        infoCard.dispatchTouchEvent(cancelEvent);
-                    }, 100);
-                }
-            };
-            infoCard.postDelayed(animationRunnable, 5000);
-
-            Handler trainMoveHandler = new Handler();
-            Runnable trainMover = new Runnable() {
-                @Override
-                public void run() {
-                    if (MiscTools.generateRandomNumber(0, 1) == 1) {
-                        if (!velaroIsMoving) moveVelaro(bgImageTrainVelaro);
-                        else if (!icmIsMoving) moveIcm(bgImageTrainICM);
-                    } else {
-                        if (!icmIsMoving) moveIcm(bgImageTrainICM);
-                        else if (!velaroIsMoving) moveVelaro(bgImageTrainVelaro);
-                    }
-                    trainMoveHandler.postDelayed(this, MiscTools.generateRandomNumber(1000, 3000));
-                }
-            };
-
-            bgImageTrainVelaro.postDelayed(trainMover, MiscTools.generateRandomNumber(1000, 3000));
-
-            //Start moving them initially
-            moveVelaro(bgImageTrainVelaro);
-            moveIcm(bgImageTrainICM);
+        if (powerManager.isPowerSaveMode() || !startupBackgroundAnimator.isFinished()) {
+            continuousBackgroundAnimator.setStaticLocations();
+            return;
         }
-    }
 
-    private void moveVelaro(ImageView bgImageTrainVelaro) {
-        int velaroMinSpeed = 7000, velaroMaxSpeed = 15000;
-        if (velaroIsMoving) return;
-
-        if (!velaroIsLeft) {
-            @SuppressLint("Recycle") ObjectAnimator moveVelaroToLeft = ObjectAnimator.ofFloat(bgImageTrainVelaro, "translationX", 0f);
-            moveVelaroToLeft.setDuration(MiscTools.generateRandomNumber(velaroMinSpeed, velaroMaxSpeed));
-            moveVelaroToLeft.setInterpolator(new LinearInterpolator());
-            moveVelaroToLeft.addListener(new Animator.AnimatorListener() {
-                @Override
-                public void onAnimationStart(Animator animation) {
-                    velaroIsMoving = true;
-                }
-
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    velaroIsMoving = false;
-                    velaroIsLeft = true;
-                }
-
-                @Override
-                public void onAnimationCancel(Animator animation) {
-                    velaroIsMoving = false;
-                }
-
-                @Override
-                public void onAnimationRepeat(Animator animation) {
-
-                }
-            });
-            bgImageTrainVelaro.setX(5000f);
-            Runnable velaroRunnable = moveVelaroToLeft::start;
-            bgImageTrainVelaro.postDelayed(velaroRunnable, MiscTools.generateRandomNumber(0, 1000));
-        } else {
-            @SuppressLint("Recycle") ObjectAnimator moveVelaroToLeft = ObjectAnimator.ofFloat(bgImageTrainVelaro, "translationX", 5000f);
-            moveVelaroToLeft.setDuration(MiscTools.generateRandomNumber(velaroMinSpeed, velaroMaxSpeed));
-            moveVelaroToLeft.setInterpolator(new LinearInterpolator());
-            moveVelaroToLeft.addListener(new Animator.AnimatorListener() {
-                @Override
-                public void onAnimationStart(Animator animation) {
-                    velaroIsMoving = true;
-                }
-
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    velaroIsMoving = false;
-                    velaroIsLeft = false;
-                }
-
-                @Override
-                public void onAnimationCancel(Animator animation) {
-                    velaroIsMoving = false;
-                }
-
-                @Override
-                public void onAnimationRepeat(Animator animation) {
-
-                }
-            });
-            bgImageTrainVelaro.setX(-5000f);
-            Runnable velaroRunnable = moveVelaroToLeft::start;
-            bgImageTrainVelaro.postDelayed(velaroRunnable, MiscTools.generateRandomNumber(0, 1000));
-        }
-    }
-
-    private void moveIcm(ImageView bgImageTrainICM) {
-        int icmMinSpeed = 11000, icmMaxSpeed = 21000;
-        if (icmIsMoving) return;
-
-        if (!icmIsLeft) {
-            @SuppressLint("Recycle") ObjectAnimator moveIcmToLeft = ObjectAnimator.ofFloat(bgImageTrainICM, "translationX", 0f);
-            moveIcmToLeft.setDuration(MiscTools.generateRandomNumber(icmMinSpeed, icmMaxSpeed));
-            moveIcmToLeft.setInterpolator(new LinearInterpolator());
-            moveIcmToLeft.addListener(new Animator.AnimatorListener() {
-                @Override
-                public void onAnimationStart(Animator animation) {
-                    icmIsMoving = true;
-                }
-
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    icmIsMoving = false;
-                    icmIsLeft = true;
-                }
-
-                @Override
-                public void onAnimationCancel(Animator animation) {
-                    velaroIsMoving = false;
-                }
-
-                @Override
-                public void onAnimationRepeat(Animator animation) {
-
-                }
-            });
-            bgImageTrainICM.setX(5000f);
-            Runnable velaroRunnable = moveIcmToLeft::start;
-            bgImageTrainICM.postDelayed(velaroRunnable, MiscTools.generateRandomNumber(0, 1000));
-        } else {
-            @SuppressLint("Recycle") ObjectAnimator moveIcmToLeft = ObjectAnimator.ofFloat(bgImageTrainICM, "translationX", 5000f);
-            moveIcmToLeft.setDuration(MiscTools.generateRandomNumber(icmMinSpeed, icmMaxSpeed));
-            moveIcmToLeft.setInterpolator(new LinearInterpolator());
-            moveIcmToLeft.addListener(new Animator.AnimatorListener() {
-                @Override
-                public void onAnimationStart(Animator animation) {
-                    icmIsMoving = true;
-                }
-
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    icmIsMoving = false;
-                    icmIsLeft = false;
-                }
-
-                @Override
-                public void onAnimationCancel(Animator animation) {
-                    icmIsMoving = false;
-                }
-
-                @Override
-                public void onAnimationRepeat(Animator animation) {
-
-                }
-            });
-            bgImageTrainICM.setX(-5000f);
-            Runnable icmRunnable = moveIcmToLeft::start;
-            bgImageTrainICM.postDelayed(icmRunnable, MiscTools.generateRandomNumber(0, 1000));
-        }
+        startupBackgroundAnimator.startAnimations();
+        continuousBackgroundAnimator.startAnimations(true);
     }
 
     /**
@@ -450,14 +248,15 @@ public class MainActivity extends Activity {
         isDev = check;
         toolbar.getMenu().getItem(0).setChecked(check);
         toolbar.getMenu().getItem(0).setVisible(check);
+
         if (check) {
             devHint.setVisibility(View.VISIBLE);
-            dwContent.setVisibility(View.VISIBLE);
-            icsContent.setVisibility(View.VISIBLE);
+            shiftsFileContentView.setVisibility(View.VISIBLE);
+            iCalContentView.setVisibility(View.VISIBLE);
         } else {
             devHint.setVisibility(View.GONE);
-            dwContent.setVisibility(View.GONE);
-            icsContent.setVisibility(View.GONE);
+            shiftsFileContentView.setVisibility(View.GONE);
+            iCalContentView.setVisibility(View.GONE);
         }
 
         SharedPreferences prefs = getSharedPreferences(getString(R.string.sharedPrefs), Context.MODE_PRIVATE);
@@ -469,7 +268,7 @@ public class MainActivity extends Activity {
 
     /**
      * Turns on or off developer mode. In Devmode you get additional fields with the raw data of both
-     * the original file & the iCal output. This one doesn't display a Toast
+     * the original file & the iCal output. This one doesn't display a Toast.
      *
      * @param check whether DevMode should be on or off
      */
@@ -479,12 +278,14 @@ public class MainActivity extends Activity {
         toolbar.getMenu().getItem(0).setVisible(check);
         if (check) {
             devHint.setVisibility(View.VISIBLE);
-            dwContent.setVisibility(View.VISIBLE);
-            icsContent.setVisibility(View.VISIBLE);
+            shiftsFileContentView.setVisibility(View.VISIBLE);
+            iCalContentView.setVisibility(View.VISIBLE);
+            findViewById(R.id.scrollViewMain).setKeepScreenOn(true);
         } else {
             devHint.setVisibility(View.GONE);
-            dwContent.setVisibility(View.GONE);
-            icsContent.setVisibility(View.GONE);
+            shiftsFileContentView.setVisibility(View.GONE);
+            iCalContentView.setVisibility(View.GONE);
+            findViewById(R.id.scrollViewMain).setKeepScreenOn(false);
         }
 
         SharedPreferences prefs = getSharedPreferences(getString(R.string.sharedPrefs), Context.MODE_PRIVATE);
@@ -505,7 +306,7 @@ public class MainActivity extends Activity {
         super.onActivityResult(requestCode, resultCode, intent);
 
         if (requestCode == PICK_FILE_REQUEST && resultCode == RESULT_OK && intent != null) {
-            Log.d(TAG, "File retrieved, loading.. " + intent);
+            Logger.debug(TAG, "File retrieved, loading.. " + intent);
             Uri fileUri = intent.getData();
             handleFileIntent(fileUri);
         }
@@ -513,18 +314,17 @@ public class MainActivity extends Activity {
 
     /**
      * Starts reading the file & checks whether it's valid.
-     *
      * @param uri URI that points to the file
      */
     @SuppressLint("SetTextI18n")
     private void handleFileIntent(Uri uri) {
-        dwReader.resetData();
-        dwReader.startConversion(this, uri);
-        dwContent.setText(dwReader.fullFileString());
-        icsContent.setText(dwReader.getCalendarICS());
-        if (DWReader.dw.size() > 0) {
+        shiftsFileReader.resetData();
+        shiftsFileReader.startConversion(this, uri);
+        shiftsFileContentView.setText(shiftsFileReader.fullFileString());
+        iCalContentView.setText(shiftsFileReader.getCalendarICS());
+        if (ShiftsFileReader.dw.size() > 0) {
 
-            loadedSuccess.setText("Week " + DWReader.weekNumber + " van jaar " + DWReader.yearNumber + " geladen!");
+            loadedSuccess.setText("Week " + ShiftsFileReader.weekNumber + " van jaar " + ShiftsFileReader.yearNumber + " geladen!");
             loadedSuccess.setVisibility(View.VISIBLE);
             loadedNone.setVisibility(View.GONE);
             loadedError.setVisibility(View.GONE);
@@ -541,7 +341,7 @@ public class MainActivity extends Activity {
                     FileOutputStream out = new FileOutputStream(file);
                     OutputStreamWriter writer = new OutputStreamWriter(out);
 
-                    writer.write(dwReader.getCalendarICS());
+                    writer.write(shiftsFileReader.getCalendarICS());
                     writer.close();
                     out.close();
 
@@ -570,13 +370,5 @@ public class MainActivity extends Activity {
             btnReset.setVisibility(View.GONE);
             btnConvert.setVisibility(View.GONE);
         }
-    }
-
-    /**
-     * We want the animations to start over to keep a nice & dynamic vibe.
-     */
-    @Override
-    protected void onResume() {
-        super.onResume();
     }
 }

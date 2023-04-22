@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.WindowManager;
 import android.widget.ImageView;
 
 import com.google.android.material.appbar.MaterialToolbar;
@@ -12,6 +13,13 @@ import com.google.android.material.button.MaterialButton;
 
 public class AboutActivity extends Activity {
 
+    /**
+     * Runs on app startup.
+     * We're setting the alpha of the background images because, in xml, it doesn't work apparently..
+     * Also setting navigation actions: toolbar 'back' icon.
+     *
+     * @param savedInstanceState honestly, I don't know what this is.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -26,7 +34,7 @@ public class AboutActivity extends Activity {
 
         MaterialToolbar toolbar = findViewById(R.id.toolbarAbout);
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
-
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
 
         int nightModeFlags = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
         int transparency = (nightModeFlags == Configuration.UI_MODE_NIGHT_YES) ? 50 : 110;
@@ -40,6 +48,9 @@ public class AboutActivity extends Activity {
         handleButtons();
     }
 
+    /**
+     * Binds the actions to the buttons placed on the activity.
+     */
     private void handleButtons() {
         MaterialButton emailButton = findViewById(R.id.emailButtonAbout);
         emailButton.setOnClickListener(v -> {

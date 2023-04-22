@@ -16,7 +16,7 @@
         android:layout_marginTop="10dp"
         android:layout_marginEnd="-40dp"
         android:src="@drawable/ic_baseline_calendar_bg_150"
-        app:layout_constraintEnd_toEndOf="@+id/mainView"
+        app:layout_constraintEnd_toEndOf="@+id/scrollViewMain"
         app:layout_constraintTop_toBottomOf="@+id/bgImageTrainICM"
         android:alpha="50"
         android:contentDescription="@string/background_image" />
@@ -28,8 +28,8 @@
         android:layout_marginTop="20dp"
         android:layout_marginEnd="40dp"
         android:src="@drawable/train_icm_long"
-        app:layout_constraintEnd_toStartOf="@+id/mainView"
-        app:layout_constraintTop_toTopOf="@+id/mainView"
+        app:layout_constraintEnd_toStartOf="@+id/scrollViewMain"
+        app:layout_constraintTop_toTopOf="@+id/scrollViewMain"
         android:alpha="50"
         android:contentDescription="@string/background_image" />
 
@@ -41,7 +41,7 @@
         android:layout_marginEnd="-60dp"
         android:alpha="50"
         android:src="@drawable/train_virm"
-        app:layout_constraintEnd_toStartOf="@+id/mainView"
+        app:layout_constraintEnd_toStartOf="@+id/scrollViewMain"
         app:layout_constraintBottom_toBottomOf="@+id/bgImageTrainLoc"
         android:contentDescription="@string/background_image" />
 
@@ -54,7 +54,7 @@
         android:scaleX="-1"
         android:alpha="50"
         android:src="@drawable/train_loc"
-        app:layout_constraintStart_toEndOf="@+id/mainView"
+        app:layout_constraintStart_toEndOf="@+id/scrollViewMain"
         app:layout_constraintBottom_toTopOf="@id/bgImageTrainVelaro"
         android:contentDescription="@string/background_image" />
 
@@ -67,8 +67,8 @@
         android:scaleX="-1"
         android:alpha="50"
         android:src="@drawable/train_velaro_long"
-        app:layout_constraintEnd_toStartOf="@+id/mainView"
-        app:layout_constraintBottom_toBottomOf="@id/mainView"
+        app:layout_constraintEnd_toStartOf="@+id/scrollViewMain"
+        app:layout_constraintBottom_toBottomOf="@id/scrollViewMain"
         android:contentDescription="@string/background_image" />
 
     <ImageView
@@ -82,13 +82,13 @@
         android:scaleX="-1"
         android:src="@drawable/ic_outline_access_time_180"
         app:layout_constraintTop_toBottomOf="@id/bgImageCalendar"
-        app:layout_constraintStart_toStartOf="@+id/mainView"
+        app:layout_constraintStart_toStartOf="@+id/scrollViewMain"
         android:contentDescription="@string/background_image" />
 
 
     <ScrollView
         tools:context=".MainActivity"
-        android:id="@+id/mainView"
+        android:id="@+id/scrollViewMain"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:elevation="1dp"

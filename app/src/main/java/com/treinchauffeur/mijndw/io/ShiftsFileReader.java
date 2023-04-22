@@ -11,6 +11,7 @@ import android.widget.Toast;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.treinchauffeur.mijndw.R;
+import com.treinchauffeur.mijndw.misc.Logger;
 import com.treinchauffeur.mijndw.misc.Utils;
 import com.treinchauffeur.mijndw.obj.Shift;
 import com.treinchauffeur.mijndw.obj.Staff;
@@ -37,11 +38,9 @@ import biweekly.util.Duration;
 /**
  * @author Leonk A basic bot to load workdays from a DW (donderdagse week)
  * weekly planning .txt file into something that's actually useful like
- * Google Calendar. ACTUALLY just for now we're gonna generate a .ics
- * file for manual importing.
+ * Google Calendar.
  */
-
-public class DWReader {
+public class ShiftsFileReader {
 
     private static String[] fileContents = new String[13];
     private static final String TAG = "Run";
@@ -54,7 +53,7 @@ public class DWReader {
     private static final Staff staff = new Staff();
     public Context context;
 
-    public DWReader(Context context) {
+    public ShiftsFileReader(Context context) {
         this.context = context;
     }
 
@@ -66,7 +65,7 @@ public class DWReader {
      */
     public void startConversion(Context c, Uri uri) {
         dw.clear();
-        Log.d(TAG, "started reading file: ");
+        Logger.debug(TAG, "started reading file: ");
         toRead = uri;
 
         if (toRead == null) {
@@ -74,7 +73,7 @@ public class DWReader {
             return;
         }
 
-        Log.d(TAG, "Using file: " + uri.getPath());
+        Logger.debug(TAG, "Using file: " + uri.getPath());
 
         if (readFile(uri, c))
             processFile(context);
@@ -167,8 +166,8 @@ public class DWReader {
             staff.setStaffNumber(staffNumber);
             staff.setStaffName(staffNumberLine.split(" ")[1] + ". " + staffNumberLine.split(" ")[2]);
 
-            Log.d(TAG, "DW FOR " + staffNumberLine + ":");
-            Log.d(TAG, "//////////// START WEEK " + weekNumber + " OF " + yearNumber + " ////////////");
+            Logger.debug(TAG, "DW FOR " + staffNumberLine + ":");
+            Logger.debug(TAG, "//////////// START WEEK " + weekNumber + " OF " + yearNumber + " ////////////");
 
             for (int dayLine = 6; dayLine < 13; dayLine++) {
                 Shift shift = new Shift();
@@ -201,8 +200,8 @@ public class DWReader {
                 String endTime;
 
                 //Check if this is a day off work
-                if (isRestingday(shiftNumber)) {
-                    Log.d(TAG, "Staff " + shift.getStaff().getStaffName() + " is free on " + dayArray[1] + ".");
+                if (isRestingDay(shiftNumber)) {
+                    Logger.debug(TAG, "Staff " + shift.getStaff().getStaffName() + " is free on " + dayArray[1] + ".");
                     continue;
                 } else {
                     startTime = dayArray[3];
@@ -244,8 +243,6 @@ public class DWReader {
                 shift.setLocation(location);
                 shift.setStartTime(shiftStartDate);
                 shift.setProfession(profession);
-                shift.setWeekNumber(weekNumber);
-                shift.setYearNumber(yearNumber);
                 shift.setLengthHours((int) diffHours);
                 shift.setLengthMinutes((int) minutes);
                 shift.setStartMillis(StartMillis);
@@ -253,21 +250,21 @@ public class DWReader {
 
                 dw.add(shift);
 
-                Log.d(TAG,
+                Logger.debug(TAG,
                         "staff " + shift.getStaff().getStaffName() + " runs shift " + shift.getLocation()
                                 + shift.getShiftNumber() + " at " + shift.getStartTime()
                                 + " with a shift length of " + shift.getLengthHours() + " hours and "
                                 + shift.getLengthMinutes() + " minutes.");
             }
 
-            Log.d(TAG, "//////////// END OF WEEK ////////////");
+            Logger.debug(TAG, "//////////// END OF WEEK ////////////");
 
-            Snackbar successBar = Snackbar.make(((Activity) context).findViewById(R.id.mainView), "DW geladen: week " +
+            Snackbar successBar = Snackbar.make(((Activity) context).findViewById(R.id.scrollViewMain), "DW geladen: week " +
                     weekNumber + " van " + yearNumber, Snackbar.LENGTH_LONG);
             successBar.setAnimationMode(BaseTransientBottomBar.ANIMATION_MODE_SLIDE);
             successBar.show();
 
-            Log.d(TAG, "Finished scanning " + toRead.getPath());
+            Logger.debug(TAG, "Finished scanning " + toRead.getPath());
         } catch (ParseException e) {
             e.printStackTrace();
         }
@@ -276,7 +273,6 @@ public class DWReader {
 
     /**
      * Puts all the shift details from their respective objects in to an iCalendar String using biWeekly.
-     *
      * @return the full, completed iCalendar String.
      */
     @SuppressLint("SimpleDateFormat")
@@ -383,7 +379,13 @@ public class DWReader {
         }
     }
 
-    private static boolean isRestingday(String shiftNumber) {
+    /**
+     * Determines whether a shift number (or rather a title?) is a day off, and should be listed as a shift or not.
+     *
+     * @param shiftNumber the given shift number to check.
+     * @return whether it should be listed or not.
+     */
+    private static boolean isRestingDay(String shiftNumber) {
         switch (shiftNumber.toLowerCase()) {
             case "r":
             case "streepjesdag":
@@ -395,6 +397,9 @@ public class DWReader {
         }
     }
 
+    /**
+     * Resets all the data. Used when loading a new file after having already loaded a file previously.
+     */
     public void resetData() {
         fileContents = new String[13];
         dw = new ArrayList<>();
