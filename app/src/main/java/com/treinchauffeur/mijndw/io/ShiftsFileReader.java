@@ -200,7 +200,7 @@ public class ShiftsFileReader {
                 String endTime;
 
                 //Check if this is a day off work
-                if (isRestingDay(shiftNumber)) {
+                if (isRestingDay(shiftNumber) || dayArray.length < 4) {
                     Logger.debug(TAG, "Staff " + shift.getStaff().getStaffName() + " is free on " + dayArray[1] + ".");
                     continue;
                 } else {
@@ -219,12 +219,14 @@ public class ShiftsFileReader {
                     startDate = "" + day + "-" + month + "-" + yearNumber + " " + startTime
                             + "";
                 }
+
                 date1 = format.parse(startTime);
                 date2 = format.parse(endTime);
                 assert date1 != null;
                 cal1.setTime(date1);
                 assert date2 != null;
                 cal2.setTime(date2);
+
                 if (cal2.getTimeInMillis() - cal1.getTimeInMillis() < 0)
                     cal2.add(Calendar.DATE, 1);
 
@@ -391,6 +393,9 @@ public class ShiftsFileReader {
             case "streepjesdag":
             case "vl":
             case "gvl":
+            case "wa":
+            case "wr":
+            case "wv":
                 return true;
             default:
                 return false;
