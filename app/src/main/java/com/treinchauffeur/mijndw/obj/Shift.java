@@ -3,8 +3,8 @@ package com.treinchauffeur.mijndw.obj;
 import java.util.Date;
 
 /**
- *
- * @author Leonk Defines a shift as an object
+ * @author treinchauffeur
+ * Defines a shift as an object
  */
 
 public class Shift {

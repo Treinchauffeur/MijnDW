@@ -3,15 +3,18 @@ package com.treinchauffeur.mijndw.io;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.util.Log;
-import android.widget.Toast;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
+import com.treinchauffeur.mijndw.BuildConfig;
 import com.treinchauffeur.mijndw.R;
 import com.treinchauffeur.mijndw.misc.Logger;
+import com.treinchauffeur.mijndw.misc.Settings;
 import com.treinchauffeur.mijndw.misc.Utils;
 import com.treinchauffeur.mijndw.obj.Shift;
 import com.treinchauffeur.mijndw.obj.Staff;
@@ -36,7 +39,8 @@ import biweekly.util.Duration;
 
 
 /**
- * @author Leonk A basic bot to load workdays from a DW (donderdagse week)
+ * @author treinchauffeur
+ * A basic bot to load workdays from a DW (donderdagse week)
  * weekly planning .txt file into something that's actually useful like
  * Google Calendar.
  */
@@ -44,6 +48,7 @@ public class ShiftsFileReader {
 
     private static String[] fileContents = new String[13];
     private static final String TAG = "Run";
+    public static final int REASON_FAILED_READ = 1, REASON_FAILED_PROCESS = 2;
     public static Uri toRead;
     @SuppressLint("SimpleDateFormat")
     static SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm");
@@ -75,11 +80,41 @@ public class ShiftsFileReader {
 
         Logger.debug(TAG, "Using file: " + uri.getPath());
 
-        if (readFile(uri, c))
-            processFile(context);
-        else {
-            Toast.makeText(c, "Fout in het laden van bestand. Is dit wel een DW bestand?", Toast.LENGTH_SHORT).show();
+        if (readFile(uri, c)) {
+            boolean success = processFile(context);
+            if (!success) {
+                showErrorDialog(c, REASON_FAILED_PROCESS);
+            }
+        } else {
+            showErrorDialog(c, REASON_FAILED_READ);
         }
+    }
+
+    private void showErrorDialog(Context c, int reason) {
+        String bodyText = (reason == REASON_FAILED_READ) ? "Er is een fout opgetreden tijdens het inlezen van jouw DW." +
+                " Zou je deze willen emailen naar de ontwikkelaar voor analyse zodat deze de app kan verbeteren? :) \n\n" +
+                "Je kan eventueel deze mail zelf nog bewerken om je personeelsnummer en andere gevoelige gegevens aan te passen of te verwijderen." :
+
+                "Er is een fout opgetreden tijdens het verwerken van jouw DW. " +
+                        " Zou je deze willen emailen naar de ontwikkelaar voor analyse zodat deze de app kan verbeteren? :) \n\n" +
+                        "Je kan eventueel deze mail zelf nog bewerken om je personeelsnummer en andere gevoelige gegevens aan te passen of te verwijderen. \n\n" +
+                        "Toch is het mogelijk dat bepaalde dagen wel goed verwerkt zijn en deze toe te voegen zijn aan je agenda. Controleer deze goed vóórdat je dit doet!";
+
+        new MaterialAlertDialogBuilder(c, R.style.ThemeOverlay_App_MaterialErrorDialog)
+                .setTitle("Fout opgetreden")
+                .setIcon(R.drawable.baseline_error_outline_24)
+                .setMessage(bodyText)
+
+                .setPositiveButton("DW E-MAILEN", (dialogInterface, i) -> {
+                    final Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
+                    emailIntent.setData(Uri.parse("mailto:"));
+                    emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{Settings.DEV_EMAIL});
+                    emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Fout tijdens " + (reason == REASON_FAILED_READ ? "inlezen" : "verwerken") + " van DW");
+                    emailIntent.putExtra(Intent.EXTRA_TEXT, "Mijn DW versie " + BuildConfig.VERSION_NAME + "\n"
+                            + fullFileString() + "\n\n" + "-------- Mocht je nog iets kwijt willen, graag onder deze lijn --------" + "\n\n");
+                    c.startActivity(Intent.createChooser(emailIntent, "E-mail versturen.."));
+                })
+                .setNegativeButton("NEE", (dialogInterface, i) -> dialogInterface.dismiss()).show();
     }
 
     /**
@@ -93,27 +128,34 @@ public class ShiftsFileReader {
             InputStream inputStream = c.getContentResolver().openInputStream(uri);
             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
 
-            fileContents[0] = reader.readLine(); //first line: Donderdagse Week van WW-YYYY
+            if (fileContents.length >= 13) {
+                fileContents[0] = reader.readLine(); //first line: Donderdagse Week van WW-YYYY
 
-            if (fileContents[0] == null)
-                return false;
-            else if (!fileContents[0].contains("Donderdagse Week van"))
-                return false;
+                if (fileContents[0] == null)
+                    return false;
+                else if (!fileContents[0].contains("Donderdagse Week van"))
+                    return false;
 
-            fileContents[1] = reader.readLine(); // Empty for formatting
-            fileContents[2] = reader.readLine(); //Staff number + name
-            fileContents[3] = reader.readLine(); //Empty again
-            fileContents[4] = reader.readLine(); //Table titles
-            fileContents[5] = reader.readLine(); //Table formatting
-            fileContents[6] = reader.readLine(); //Monday
-            fileContents[7] = reader.readLine(); //Tuesday
-            fileContents[8] = reader.readLine(); //Wednesday
-            fileContents[9] = reader.readLine(); //Thursday
-            fileContents[10] = reader.readLine(); //Friday
-            fileContents[11] = reader.readLine(); //Saturday
-            fileContents[12] = reader.readLine(); //Sunday
+                fileContents[1] = reader.readLine(); // Empty for formatting
+                fileContents[2] = reader.readLine(); //Staff number + name
+                fileContents[3] = reader.readLine(); //Empty again
+                fileContents[4] = reader.readLine(); //Table titles
+                fileContents[5] = reader.readLine(); //Table formatting
+                fileContents[6] = reader.readLine(); //Monday
+                fileContents[7] = reader.readLine(); //Tuesday
+                fileContents[8] = reader.readLine(); //Wednesday
+                fileContents[9] = reader.readLine(); //Thursday
+                fileContents[10] = reader.readLine(); //Friday
+                fileContents[11] = reader.readLine(); //Saturday
+                fileContents[12] = reader.readLine(); //Sunday
+
+            } else {
+                return false;
+            }
 
             reader.close();
+
+            if (fileContents[12] == null) return false;
 
             if (fileContents[12].startsWith("zo"))
                 return true;
@@ -132,8 +174,7 @@ public class ShiftsFileReader {
      *
      * @param context app context used for sending toasts
      */
-    @SuppressWarnings("deprecation")
-    private static void processFile(Context context) {
+    private static boolean processFile(Context context) {
         @SuppressLint("SimpleDateFormat") SimpleDateFormat format = new SimpleDateFormat("HH:mm");
         java.util.Date date1;
         java.util.Date date2;
@@ -156,9 +197,6 @@ public class ShiftsFileReader {
                 weekNumber = Integer.parseInt(dateYear[0].substring(Math.max(dateYear[0].length() - 2, 0)));
             yearNumber = Integer.parseInt(dateYear[1]);
 
-            // Second line - empty for formatting purposes
-            //String emptyLineOne = fileContents[1].replaceAll("\\s+", " ");
-
             // Third line - staff number
             String staffNumberLine = fileContents[2].replaceAll("\\s+", " ");
             staffNumber = Integer.parseInt(staffNumberLine.split(" ")[0]);
@@ -169,9 +207,11 @@ public class ShiftsFileReader {
             Logger.debug(TAG, "DW FOR " + staffNumberLine + ":");
             Logger.debug(TAG, "//////////// START WEEK " + weekNumber + " OF " + yearNumber + " ////////////");
 
+            //Loop through the actual days of the week for code-efficiency, since all days are created equal.
             for (int dayLine = 6; dayLine < 13; dayLine++) {
                 Shift shift = new Shift();
                 shift.setStaff(staff);
+
                 String lineToRead = fileContents[dayLine].replaceAll("\\s+", " ");
                 shift.setRawString(lineToRead);
                 String modifier = "-1";
@@ -213,13 +253,14 @@ public class ShiftsFileReader {
 
                 String startDate;
                 if ((weekNumber == 52 || weekNumber == 53) && month == 1) {// we passed newyear's
-                    startDate = "" + day + "-" + month + "-" + yearNumber + 1 + " " + startTime
+                    startDate = "" + day + "-" + month + "-" + (yearNumber + 1) + " " + startTime
                             + "";
                 } else {
                     startDate = "" + day + "-" + month + "-" + yearNumber + " " + startTime
                             + "";
                 }
 
+                //Make sure the days aren't null. After that, set the shift start time & length.
                 date1 = format.parse(startTime);
                 date2 = format.parse(endTime);
                 assert date1 != null;
@@ -240,6 +281,7 @@ public class ShiftsFileReader {
                 long StartMillis = shiftStartDate.getTime();
                 long EndMillis = shiftStartDate.getTime() + diff;
 
+                //Finally collect all the details into a Shift object.
                 shift.setShiftNumber(shiftNumber);
                 shift.setShiftNumberModifier(modifier);
                 shift.setLocation(location);
@@ -267,14 +309,16 @@ public class ShiftsFileReader {
             successBar.show();
 
             Logger.debug(TAG, "Finished scanning " + toRead.getPath());
-        } catch (ParseException e) {
+            return true;
+        } catch (ParseException | ArrayIndexOutOfBoundsException | AssertionError e) {
             e.printStackTrace();
+            return false;
         }
-
     }
 
     /**
      * Puts all the shift details from their respective objects in to an iCalendar String using biWeekly.
+     *
      * @return the full, completed iCalendar String.
      */
     @SuppressLint("SimpleDateFormat")

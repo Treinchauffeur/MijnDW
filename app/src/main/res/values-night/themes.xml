@@ -36,5 +36,17 @@
         <item name="android:windowLightStatusBar">?attr/isLightTheme</item>
         <item name="android:windowLightNavigationBar">?attr/isLightTheme</item>
 
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.App.MaterialErrorDialog</item>
+    </style>
+
+
+    <style name="ThemeOverlay.App.MaterialErrorDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="colorSurface">?attr/colorErrorContainer</item>
+        <item name="colorOnSurface">?attr/colorOnErrorContainer</item>
+        <item name="alertDialogStyle">@style/MaterialAlertDialog.App</item>
+        <item name="materialAlertDialogTitleTextStyle">@style/MaterialAlertDialog.App.Title.Text
+        </item>
+        <item name="buttonBarPositiveButtonStyle">@style/Widget.App.Button</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Widget.App.Button</item>
     </style>
 </resources>

@@ -28,6 +28,7 @@ import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.materialswitch.MaterialSwitch;
 import com.treinchauffeur.mijndw.io.ShiftsFileReader;
 import com.treinchauffeur.mijndw.misc.Logger;
+import com.treinchauffeur.mijndw.misc.Settings;
 import com.treinchauffeur.mijndw.ui.ContinuousBackgroundAnimator;
 import com.treinchauffeur.mijndw.ui.StartupBackgroundAnimator;
 
@@ -107,7 +108,7 @@ public class MainActivity extends Activity {
             if (item.getItemId() == R.id.mailDev) {
                 final Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
                 emailIntent.setData(Uri.parse("mailto:"));
-                emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{"treinchauffeur.dev@gmail.com"});
+                emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{Settings.DEV_EMAIL});
                 emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Over: Mijn DW");
                 emailIntent.putExtra(Intent.EXTRA_TEXT, "Mijn DW versie " + BuildConfig.VERSION_NAME);
                 startActivity(Intent.createChooser(emailIntent, "E-mail versturen.."));

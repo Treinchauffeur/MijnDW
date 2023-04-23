@@ -1,7 +1,7 @@
 package com.treinchauffeur.mijndw.misc;
 
 /**
- * @author Leonk
+ * @author treinchauffeur
  * Defines settings for the app.
  */
 
@@ -14,4 +14,5 @@ public class Settings {
     public static final int velaroMinSpeed = 7000, velaroMaxSpeed = 15000;
     public static final int icmMinSpeed = 11000, icmMaxSpeed = 21000;
     public static final long CLOCK_SPIN_DURATION = 15000;
+    public static final String DEV_EMAIL = "treinchauffeur.dev@gmail.com";
 }

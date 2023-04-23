@@ -10,6 +10,7 @@ import android.widget.ImageView;
 
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
+import com.treinchauffeur.mijndw.misc.Settings;
 
 public class AboutActivity extends Activity {
 
@@ -56,7 +57,7 @@ public class AboutActivity extends Activity {
         emailButton.setOnClickListener(v -> {
             final Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
             emailIntent.setData(Uri.parse("mailto:"));
-            emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{"treinchauffeur.dev@gmail.com"});
+            emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{Settings.DEV_EMAIL});
             emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Over: Mijn DW");
             emailIntent.putExtra(Intent.EXTRA_TEXT, "Mijn DW versie " + BuildConfig.VERSION_NAME);
             startActivity(Intent.createChooser(emailIntent, "E-mail versturen.."));

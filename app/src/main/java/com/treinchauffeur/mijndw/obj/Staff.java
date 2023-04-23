@@ -3,7 +3,7 @@ package com.treinchauffeur.mijndw.obj;
 import android.annotation.SuppressLint;
 
 /**
- * @author Leonk
+ * @author treinchauffeur
  * Defines a staff as an object
  */
 public class Staff {
