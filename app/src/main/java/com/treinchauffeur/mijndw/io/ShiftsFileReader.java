@@ -384,7 +384,7 @@ public class ShiftsFileReader {
      * Determines whether a symbol or multiple symbols are shift modifiers.
      * This is necessary in order to properly read each day of the week correctly.
      *
-     * @param s the given symbol(s).
+     * @param modifier the given symbol(s).
      * @return whether it is a shift modifier or not.
      * <p>
      * Known modifiers for Regio Twente:
@@ -395,8 +395,8 @@ public class ShiftsFileReader {
      * !
      * @
      */
-    public static boolean isShiftModifier(String s) {
-        switch (s) {
+    public static boolean isShiftModifier(String modifier) {
+        switch (modifier) {
             case "!":
             case "@":
             case ">":
@@ -407,6 +407,7 @@ public class ShiftsFileReader {
             case "#":
             case "$":
             case "%":
+            case "=":
             case "P":
             case "P!":
             case "P@":
@@ -418,6 +419,7 @@ public class ShiftsFileReader {
             case "P#":
             case "P$":
             case "P%":
+            case "P=":
                 return true;
             default:
                 return false;
@@ -440,6 +442,7 @@ public class ShiftsFileReader {
             case "wa":
             case "wr":
             case "wv":
+            case "co":
                 return true;
             default:
                 return false;

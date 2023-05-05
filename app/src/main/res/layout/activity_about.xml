@@ -130,7 +130,7 @@
                     <com.google.android.material.card.MaterialCardView
                         android:layout_width="100dp"
                         android:layout_height="100dp"
-                        app:cardBackgroundColor="?attr/colorSecondaryContainer"
+                        app:cardBackgroundColor="?attr/colorPrimary"
                         android:layout_gravity="center"
                         app:strokeWidth="0dp">
 
@@ -140,7 +140,7 @@
                             android:layout_height="120dp"
                             android:scaleType="centerCrop"
                             android:layout_gravity="center"
-                            android:alpha="0.8"
+                            android:alpha="1"
                             android:contentDescription="@string/app_icoon"
                             android:src="@mipmap/ic_launcher_grayscale_foreground"
                             tools:ignore="UseAppTint" />
