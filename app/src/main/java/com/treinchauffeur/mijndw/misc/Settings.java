@@ -8,7 +8,7 @@ package com.treinchauffeur.mijndw.misc;
 public class Settings {
 
     //Whether we should log shift details to logcat.
-    public static final boolean DEBUG = false;
+    public static final boolean DEBUG = true;
 
     //Animation definitions: setting the speeds at which the bottom and top trains move.
     public static final int velaroMinSpeed = 7000, velaroMaxSpeed = 15000;

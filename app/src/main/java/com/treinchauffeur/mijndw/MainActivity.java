@@ -199,7 +199,6 @@ public class MainActivity extends Activity {
             btnReset.setVisibility(View.GONE);
         });
 
-
         shiftsFileReader = new ShiftsFileReader(this);
 
         btnLoadFile.setOnClickListener(view -> {
@@ -223,7 +222,6 @@ public class MainActivity extends Activity {
      * We're animating the background train images as well as hinting to the user that the infoCard can be dismissed.
      * Animations keep things nice & dynamic.
      */
-    @SuppressLint("Recycle")
     private void performAnimations() {
         ViewGroup rootView = findViewById(R.id.parentView);
         StartupBackgroundAnimator startupBackgroundAnimator = new StartupBackgroundAnimator(rootView, MainActivity.this);
@@ -323,8 +321,8 @@ public class MainActivity extends Activity {
         shiftsFileReader.startConversion(this, uri);
         shiftsFileContentView.setText(shiftsFileReader.fullFileString());
         iCalContentView.setText(shiftsFileReader.getCalendarICS());
-        if (ShiftsFileReader.dw.size() > 0) {
 
+        if (ShiftsFileReader.dw.size() > 0) {
             loadedSuccess.setText("Week " + ShiftsFileReader.weekNumber + " van jaar " + ShiftsFileReader.yearNumber + " geladen!");
             loadedSuccess.setVisibility(View.VISIBLE);
             loadedNone.setVisibility(View.GONE);

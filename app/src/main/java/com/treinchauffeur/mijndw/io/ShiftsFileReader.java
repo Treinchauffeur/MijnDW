@@ -93,12 +93,12 @@ public class ShiftsFileReader {
     private void showErrorDialog(Context c, int reason) {
         String bodyText = (reason == REASON_FAILED_READ) ? "Er is een fout opgetreden tijdens het inlezen van jouw DW." +
                 " Zou je deze willen emailen naar de ontwikkelaar voor analyse zodat deze de app kan verbeteren? :) \n\n" +
-                "Je kan eventueel deze mail zelf nog bewerken om je personeelsnummer en andere gevoelige gegevens aan te passen of te verwijderen." :
-
+                "Je kan eventueel deze mail zelf nog bewerken om je personeelsnummer en andere gevoelige gegevens aan te passen of te verwijderen."
+                :
                 "Er is een fout opgetreden tijdens het verwerken van jouw DW. " +
                         " Zou je deze willen emailen naar de ontwikkelaar voor analyse zodat deze de app kan verbeteren? :) \n\n" +
                         "Je kan eventueel deze mail zelf nog bewerken om je personeelsnummer en andere gevoelige gegevens aan te passen of te verwijderen. \n\n" +
-                        "Toch is het mogelijk dat bepaalde dagen wel goed verwerkt zijn en deze toe te voegen zijn aan je agenda. Controleer deze goed vóórdat je dit doet!";
+                        "Toch is het mogelijk dat bepaalde dagen WEL goed verwerkt zijn en deze toe te voegen zijn aan je agenda. Controleer deze goed vóórdat je dit doet!";
 
         new MaterialAlertDialogBuilder(c, R.style.ThemeOverlay_App_MaterialErrorDialog)
                 .setTitle("Fout opgetreden")
@@ -420,6 +420,16 @@ public class ShiftsFileReader {
             case "P$":
             case "P%":
             case "P=":
+            case "E!":
+            case "E@":
+            case "E>":
+            case "E<":
+            case "E*":
+            case "E?":
+            case "E#":
+            case "E$":
+            case "E%":
+            case "E=":
                 return true;
             default:
                 return false;
