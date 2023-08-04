@@ -53,7 +53,6 @@ public class ShiftsFileReader {
     @SuppressLint("SimpleDateFormat")
     static SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm");
     public static int staffNumber = -1, weekNumber = -1, yearNumber = -1;
-
     public static ArrayList<Shift> dw = new ArrayList<>();
     private static final Staff staff = new Staff();
     public Context context;
@@ -128,14 +127,30 @@ public class ShiftsFileReader {
             InputStream inputStream = c.getContentResolver().openInputStream(uri);
             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
 
-            if (fileContents.length >= 13) {
-                fileContents[0] = reader.readLine(); //first line: Donderdagse Week van WW-YYYY
+            int lines = 0;
+            while (reader.readLine() != null) lines++;
+            reader.close();
+            inputStream.close();
+            Logger.debug(TAG, "File has amount of lines: " + lines);
+            fileContents = new String[lines];
+
+            //Reopen those streams to actually assign the filecontent lines.
+            inputStream = c.getContentResolver().openInputStream(uri);
+            reader = new BufferedReader(new InputStreamReader(inputStream));
+
+            if (lines >= 13) {
+                fileContents[0] = reader.readLine(); //first line: Donderdagse Week van WW-YYYY OR Jaarrooster YYYY
 
                 if (fileContents[0] == null)
                     return false;
-                else if (!fileContents[0].contains("Donderdagse Week van"))
+                else if (!fileContents[0].contains("Donderdagse Week van") && !fileContents[0].contains("Jaarrooster"))
                     return false;
 
+                for (int i = 1; i < fileContents.length; i++) {
+                    fileContents[i] = reader.readLine();
+                }
+
+                /*
                 fileContents[1] = reader.readLine(); // Empty for formatting
                 fileContents[2] = reader.readLine(); //Staff number + name
                 fileContents[3] = reader.readLine(); //Empty again
@@ -148,8 +163,10 @@ public class ShiftsFileReader {
                 fileContents[10] = reader.readLine(); //Friday
                 fileContents[11] = reader.readLine(); //Saturday
                 fileContents[12] = reader.readLine(); //Sunday
+                 */
 
             } else {
+                //File has too little lines.
                 return false;
             }
 
@@ -184,18 +201,26 @@ public class ShiftsFileReader {
         long diffMinutes;
         long diffHours;
         long minutes;
+        boolean isYearSchedule = false; // We assume this to be the case initially.
         try {
             dw.clear();
 
-            // First line - weeknumber + year
             String startingLine = fileContents[0].replaceAll("\\s+", " ");
-            String[] dateYear = startingLine.split("-");
-            String weekNrString = dateYear[0].substring(Math.max(dateYear[0].length() - 2, 0));
-            if (weekNrString.startsWith(" "))
-                weekNumber = Integer.parseInt(Character.toString(weekNrString.charAt(1)));
-            else
-                weekNumber = Integer.parseInt(dateYear[0].substring(Math.max(dateYear[0].length() - 2, 0)));
-            yearNumber = Integer.parseInt(dateYear[1]);
+            // Check whether schedule is just for one week or an entire year.
+            // We can check this using the first line.
+            if (startingLine.contains("Jaarrooster")) {
+                isYearSchedule = true;
+                weekNumber = Integer.parseInt(startingLine.split(" ")[1]);
+                yearNumber = weekNumber;
+            } else {
+                String[] dateYear = startingLine.split("-");
+                String weekNrString = dateYear[0].substring(Math.max(dateYear[0].length() - 2, 0));
+                if (weekNrString.startsWith(" "))
+                    weekNumber = Integer.parseInt(Character.toString(weekNrString.charAt(1)));
+                else
+                    weekNumber = Integer.parseInt(dateYear[0].substring(Math.max(dateYear[0].length() - 2, 0)));
+                yearNumber = Integer.parseInt(dateYear[1]);
+            }
 
             // Third line - staff number
             String staffNumberLine = fileContents[2].replaceAll("\\s+", " ");
@@ -208,7 +233,7 @@ public class ShiftsFileReader {
             Logger.debug(TAG, "//////////// START WEEK " + weekNumber + " OF " + yearNumber + " ////////////");
 
             //Loop through the actual days of the week for code-efficiency, since all days are created equal.
-            for (int dayLine = 6; dayLine < 13; dayLine++) {
+            for (int dayLine = 6; dayLine < fileContents.length; dayLine++) {
                 Shift shift = new Shift();
                 shift.setStaff(staff);
 
@@ -303,8 +328,12 @@ public class ShiftsFileReader {
 
             Logger.debug(TAG, "//////////// END OF WEEK ////////////");
 
-            Snackbar successBar = Snackbar.make(((Activity) context).findViewById(R.id.scrollViewMain), "DW geladen: week " +
-                    weekNumber + " van " + yearNumber, Snackbar.LENGTH_LONG);
+            Snackbar successBar;
+            if (isYearSchedule)
+                successBar = Snackbar.make(((Activity) context).findViewById(R.id.scrollViewMain), "DW geladen: Jaar " + yearNumber, Snackbar.LENGTH_LONG);
+            else
+                successBar = Snackbar.make(((Activity) context).findViewById(R.id.scrollViewMain), "DW geladen: week " +
+                        weekNumber + " van " + yearNumber, Snackbar.LENGTH_LONG);
             successBar.setAnimationMode(BaseTransientBottomBar.ANIMATION_MODE_SLIDE);
             successBar.show();
 

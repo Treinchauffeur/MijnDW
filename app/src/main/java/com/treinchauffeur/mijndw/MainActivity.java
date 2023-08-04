@@ -323,7 +323,10 @@ public class MainActivity extends Activity {
         iCalContentView.setText(shiftsFileReader.getCalendarICS());
 
         if (ShiftsFileReader.dw.size() > 0) {
-            loadedSuccess.setText("Week " + ShiftsFileReader.weekNumber + " van jaar " + ShiftsFileReader.yearNumber + " geladen!");
+            if (ShiftsFileReader.weekNumber > 54)
+                loadedSuccess.setText("Jaar " + ShiftsFileReader.yearNumber + " geladen!");
+            else
+                loadedSuccess.setText("Week " + ShiftsFileReader.weekNumber + " van jaar " + ShiftsFileReader.yearNumber + " geladen!");
             loadedSuccess.setVisibility(View.VISIBLE);
             loadedNone.setVisibility(View.GONE);
             loadedError.setVisibility(View.GONE);
