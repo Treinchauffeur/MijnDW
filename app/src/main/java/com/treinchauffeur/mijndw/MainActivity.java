@@ -36,6 +36,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.Objects;
 
 public class MainActivity extends Activity {
     public static final int PICK_FILE_REQUEST = 1312;
@@ -209,7 +210,7 @@ public class MainActivity extends Activity {
         });
 
         Intent intent = getIntent();
-        if (intent.getAction().equals(Intent.ACTION_VIEW)) {
+        if (Objects.equals(intent.getAction(), Intent.ACTION_VIEW)) {
             Uri fileUri = intent.getData();
             handleFileIntent(fileUri);
         }
@@ -339,7 +340,7 @@ public class MainActivity extends Activity {
             //Sends user to the Google Calendar app page on the play store if no calendar app is available.
             btnConvert.setOnClickListener(view -> {
                 try {
-                    File file = new File(getExternalFilesDir(null).getPath() + "/converted.ics"); // Null -> temp location
+                    File file = new File(Objects.requireNonNull(getExternalFilesDir(null)).getPath() + "/converted.ics"); // Null -> temp location
                     FileOutputStream out = new FileOutputStream(file);
                     OutputStreamWriter writer = new OutputStreamWriter(out);
 

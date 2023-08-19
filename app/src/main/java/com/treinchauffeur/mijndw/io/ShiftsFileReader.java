@@ -130,6 +130,7 @@ public class ShiftsFileReader {
             int lines = 0;
             while (reader.readLine() != null) lines++;
             reader.close();
+            assert inputStream != null;
             inputStream.close();
             Logger.debug(TAG, "File has amount of lines: " + lines);
             fileContents = new String[lines];
@@ -149,21 +150,6 @@ public class ShiftsFileReader {
                 for (int i = 1; i < fileContents.length; i++) {
                     fileContents[i] = reader.readLine();
                 }
-
-                /*
-                fileContents[1] = reader.readLine(); // Empty for formatting
-                fileContents[2] = reader.readLine(); //Staff number + name
-                fileContents[3] = reader.readLine(); //Empty again
-                fileContents[4] = reader.readLine(); //Table titles
-                fileContents[5] = reader.readLine(); //Table formatting
-                fileContents[6] = reader.readLine(); //Monday
-                fileContents[7] = reader.readLine(); //Tuesday
-                fileContents[8] = reader.readLine(); //Wednesday
-                fileContents[9] = reader.readLine(); //Thursday
-                fileContents[10] = reader.readLine(); //Friday
-                fileContents[11] = reader.readLine(); //Saturday
-                fileContents[12] = reader.readLine(); //Sunday
-                 */
 
             } else {
                 //File has too little lines.
