@@ -9,10 +9,12 @@
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:exported="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MijnDW"
-        tools:targetApi="34">
+        tools:targetApi="34"
+        android:targetSdkVersion="34">
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|keyboardHidden"
@@ -50,7 +52,6 @@
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"
-            android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"

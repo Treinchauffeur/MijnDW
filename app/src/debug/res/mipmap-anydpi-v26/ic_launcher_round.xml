@@ -2,4 +2,7 @@
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
     <background android:drawable="@color/ic_launcher_background" />
     <foreground android:drawable="@mipmap/ic_launcher_foreground" />
+
+    <!-- Alleen onderstaande regel toevoegen om Material You adaptieve app icons te ondersteunen  -->
+    <monochrome android:drawable="@drawable/ic_launcher_grayscale"/>
 </adaptive-icon>
