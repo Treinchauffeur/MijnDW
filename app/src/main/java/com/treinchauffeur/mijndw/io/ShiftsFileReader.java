@@ -28,6 +28,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import biweekly.Biweekly;
@@ -89,33 +90,6 @@ public class ShiftsFileReader {
         }
     }
 
-    private void showErrorDialog(Context c, int reason) {
-        String bodyText = (reason == REASON_FAILED_READ) ? "Er is een fout opgetreden tijdens het inlezen van jouw DW." +
-                " Zou je deze willen emailen naar de ontwikkelaar voor analyse zodat deze de app kan verbeteren? :) \n\n" +
-                "Je kan eventueel deze mail zelf nog bewerken om je personeelsnummer en andere gevoelige gegevens aan te passen of te verwijderen."
-                :
-                "Er is een fout opgetreden tijdens het verwerken van jouw DW. " +
-                        " Zou je deze willen emailen naar de ontwikkelaar voor analyse zodat deze de app kan verbeteren? :) \n\n" +
-                        "Je kan eventueel deze mail zelf nog bewerken om je personeelsnummer en andere gevoelige gegevens aan te passen of te verwijderen. \n\n" +
-                        "Toch is het mogelijk dat bepaalde dagen WEL goed verwerkt zijn en deze toe te voegen zijn aan je agenda. Controleer deze goed vóórdat je dit doet!";
-
-        new MaterialAlertDialogBuilder(c, R.style.ThemeOverlay_App_MaterialErrorDialog)
-                .setTitle("Fout opgetreden")
-                .setIcon(R.drawable.baseline_error_outline_24)
-                .setMessage(bodyText)
-
-                .setPositiveButton("DW E-MAILEN", (dialogInterface, i) -> {
-                    final Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
-                    emailIntent.setData(Uri.parse("mailto:"));
-                    emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{Settings.DEV_EMAIL});
-                    emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Fout tijdens " + (reason == REASON_FAILED_READ ? "inlezen" : "verwerken") + " van DW");
-                    emailIntent.putExtra(Intent.EXTRA_TEXT, "Mijn DW versie " + BuildConfig.VERSION_NAME + "\n"
-                            + fullFileString() + "\n\n" + "-------- Mocht je nog iets kwijt willen, graag onder deze lijn --------" + "\n\n");
-                    c.startActivity(Intent.createChooser(emailIntent, "E-mail versturen.."));
-                })
-                .setNegativeButton("NEE", (dialogInterface, i) -> dialogInterface.dismiss()).show();
-    }
-
     /**
      * Reads the given file Uri & saves the contents to a String array.
      *
@@ -142,29 +116,56 @@ public class ShiftsFileReader {
             if (lines >= 13) {
                 fileContents[0] = reader.readLine(); //first line: Donderdagse Week van WW-YYYY OR Jaarrooster YYYY
 
-                if (fileContents[0] == null)
+                if (fileContents[0] == null) {
+                    Log.d(TAG, "ERROR: First line is empty!");
                     return false;
-                else if (!fileContents[0].contains("Donderdagse Week van") && !fileContents[0].contains("Jaarrooster"))
+                } else if (!fileContents[0].contains("Donderdagse Week van") && !fileContents[0].contains("Jaarrooster")) {
+                    Log.d(TAG, "ERROR: First line doesn't contain year & week data!");
                     return false;
+                }
 
                 for (int i = 1; i < fileContents.length; i++) {
-                    fileContents[i] = reader.readLine();
+                    String nextLine = reader.readLine();
+                    fileContents[i] = nextLine;
                 }
 
             } else {
-                //File has too little lines.
+                Log.d(TAG, "ERROR: File has too little lines!");
                 return false;
             }
 
             reader.close();
 
-            if (fileContents[12] == null) return false;
+            //Some DW files are formatted super weirdly, we're fixing that here.
+            //The only lines that SHOULD be empty, would be lines 2 & 4 (indexes 1 & 3).
+            //Ps I hate doing it this way, will improve this in the future using recursion.
+            if(Objects.equals(fileContents[1], "") && Objects.equals(fileContents[2], "") && Objects.equals(fileContents[3], "") &&
+                    Objects.equals(fileContents[5], "") && Objects.equals(fileContents[6], "") && Objects.equals(fileContents[7], "")) {
+                ArrayList<String> temp = new ArrayList<>();
+                for (int i = 0; i < fileContents.length; i = i + 2) {
+                    temp.add(fileContents[i]);
+                }
 
-            if (fileContents[12].startsWith("zo"))
+                if(temp.size() > 0 && temp.get(4).startsWith("Datum")) {
+                    fileContents = new String[temp.size()];
+                    for (int i = 0; i < fileContents.length; i++) {
+                        fileContents[i] = temp.get(i);
+                    }
+                }
+            }
+
+            if (fileContents[12] == null) {
+                Log.d(TAG, "ERROR: Line 13 is empty!");
+                return false;
+            }
+
+            if (fileContents[12].startsWith("zo")) {
                 return true;
+            }
         } catch (IOException e) {
             Log.e(TAG, "readFile: ", e);
         }
+        Log.d(TAG, "ERROR: Unknown error!");
         return false;
     }
 
@@ -387,7 +388,7 @@ public class ShiftsFileReader {
     /**
      * @return the entire original DW file contents in form of a String.
      */
-    public String fullFileString() {
+    public static String fullFileString() {
         StringBuilder str = new StringBuilder();
         for (String fileContent : fileContents) {
             str.append(fileContent).append("\n");
@@ -468,6 +469,7 @@ public class ShiftsFileReader {
             case "wr":
             case "wv":
             case "co":
+            case "f":
                 return true;
             default:
                 return false;
@@ -480,5 +482,38 @@ public class ShiftsFileReader {
     public void resetData() {
         fileContents = new String[13];
         dw = new ArrayList<>();
+    }
+
+    /**
+     * Shows the user a dialog with an error related to either reading or processing the file.
+     *
+     * @param c      context
+     * @param reason where something went wrong
+     */
+    private static void showErrorDialog(Context c, int reason) {
+        String bodyText = (reason == REASON_FAILED_READ) ? "Er is een fout opgetreden tijdens het inlezen van jouw DW." +
+                " Zou je deze willen emailen naar de ontwikkelaar voor analyse zodat deze de app kan verbeteren? :) \n\n" +
+                "Je kan eventueel deze mail zelf nog bewerken om je personeelsnummer en andere gevoelige gegevens aan te passen of te verwijderen."
+                :
+                "Er is een fout opgetreden tijdens het verwerken van jouw DW. " +
+                        " Zou je deze willen emailen naar de ontwikkelaar voor analyse zodat deze de app kan verbeteren? :) \n\n" +
+                        "Je kan eventueel deze mail zelf nog bewerken om je personeelsnummer en andere gevoelige gegevens aan te passen of te verwijderen. \n\n" +
+                        "Toch is het mogelijk dat bepaalde dagen WEL goed verwerkt zijn en deze toe te voegen zijn aan je agenda. Controleer deze goed vóórdat je dit doet!";
+
+        new MaterialAlertDialogBuilder(c, R.style.ThemeOverlay_App_MaterialErrorDialog)
+                .setTitle("Fout opgetreden")
+                .setIcon(R.drawable.baseline_error_outline_24)
+                .setMessage(bodyText)
+
+                .setPositiveButton("DW E-MAILEN", (dialogInterface, i) -> {
+                    final Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
+                    emailIntent.setData(Uri.parse("mailto:"));
+                    emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{Settings.DEV_EMAIL});
+                    emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Fout tijdens " + (reason == REASON_FAILED_READ ? "inlezen" : "verwerken") + " van DW");
+                    emailIntent.putExtra(Intent.EXTRA_TEXT, "Mijn DW versie " + BuildConfig.VERSION_NAME + "\n"
+                            + fullFileString() + "\n\n" + "-------- Mocht je nog iets kwijt willen, graag onder deze lijn --------" + "\n\n");
+                    c.startActivity(Intent.createChooser(emailIntent, "E-mail versturen.."));
+                })
+                .setNegativeButton("NEE", (dialogInterface, i) -> dialogInterface.dismiss()).show();
     }
 }
