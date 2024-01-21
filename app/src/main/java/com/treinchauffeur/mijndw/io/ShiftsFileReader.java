@@ -48,6 +48,7 @@ import biweekly.util.Duration;
 public class ShiftsFileReader {
 
     private static String[] fileContents = new String[13];
+    private static String[] originalContents = new String[13];
     private static final String TAG = "Run";
     public static final int REASON_FAILED_READ = 1, REASON_FAILED_PROCESS = 2;
     public static Uri toRead;
@@ -108,6 +109,7 @@ public class ShiftsFileReader {
             inputStream.close();
             Logger.debug(TAG, "File has amount of lines: " + lines);
             fileContents = new String[lines];
+            originalContents = new String[lines];
 
             //Reopen those streams to actually assign the filecontent lines.
             inputStream = c.getContentResolver().openInputStream(uri);
@@ -142,6 +144,7 @@ public class ShiftsFileReader {
             if(Objects.equals(fileContents[1], "") && Objects.equals(fileContents[2], "") && Objects.equals(fileContents[3], "") &&
                     Objects.equals(fileContents[5], "") && Objects.equals(fileContents[6], "") && Objects.equals(fileContents[7], "")) {
                 ArrayList<String> temp = new ArrayList<>();
+                originalContents = fileContents;
                 for (int i = 0; i < fileContents.length; i = i + 2) {
                     temp.add(fileContents[i]);
                 }
@@ -386,12 +389,20 @@ public class ShiftsFileReader {
     }
 
     /**
-     * @return the entire original DW file contents in form of a String.
+     * @return the entire (ORIGINAL!) DW file contents in form of a String.
      */
     public static String fullFileString() {
         StringBuilder str = new StringBuilder();
-        for (String fileContent : fileContents) {
-            str.append(fileContent).append("\n");
+
+        //We needed to edit the original lines & saved them for debugging in 'originalContents'.
+        if(originalContents[0] != null) {
+            for (String fileContent : originalContents) {
+                str.append(fileContent).append("\n");
+            }
+        } else {
+            for (String fileContent : fileContents) {
+                str.append(fileContent).append("\n");
+            }
         }
         return str.toString();
     }
