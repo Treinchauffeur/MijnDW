@@ -6,7 +6,6 @@ import java.util.Date;
  * @author treinchauffeur
  * Defines a shift as an object
  */
-
 public class Shift {
     private Staff staff;
     private Date startTime;
