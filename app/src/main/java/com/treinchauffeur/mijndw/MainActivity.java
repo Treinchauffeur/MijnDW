@@ -26,6 +26,7 @@ import androidx.core.content.FileProvider;
 
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.materialswitch.MaterialSwitch;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.treinchauffeur.mijndw.io.ShiftsFileReader;
 import com.treinchauffeur.mijndw.misc.Logger;
 import com.treinchauffeur.mijndw.misc.Settings;
@@ -52,6 +53,8 @@ public class MainActivity extends Activity {
     MaterialSwitch showProfession, showModifiers, fullDaysOnly;
     MaterialToolbar toolbar;
 
+    FirebaseAnalytics analytics;
+
     /**
      * Starting up the app, loading the layout including all the views.
      * Doing some UI stuff like programmatically setting the background images' transparency.
@@ -67,6 +70,7 @@ public class MainActivity extends Activity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
         SharedPreferences prefs = getSharedPreferences(getString(R.string.sharedPrefs), Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
+        analytics = FirebaseAnalytics.getInstance(this);
 
         toolbar = findViewById(R.id.toolbar);
         ImageView bgImageCalendar = findViewById(R.id.bgImageCalendar);
@@ -353,6 +357,10 @@ public class MainActivity extends Activity {
                     intent.setDataAndType(uri1, "text/calendar");
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+                    Bundle params = new Bundle();
+                    params.putString("converted_dws", "1");
+                    analytics.logEvent("converted_dws", params);
 
                     startActivity(intent);
                 } catch (ActivityNotFoundException e) {
