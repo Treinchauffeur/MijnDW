@@ -1,0 +1,14 @@
+Donderdagse Week van 4-2024
+
+457893 DW TEST
+
+Datum Dienst Begin Einde Fun Stdp
+________ ______ _____ _____ ___ ____
+ma 22-01 R
+di 23-01 CURS 09:00 14:00
+wo 24-01 702 03:32 10:31 Mcn ASD
+do 25-01 3 09:10 17:37 Hc RTD
+vr 26-01 7 06:16 14:38 Smw GVC
+za 27-01 @ R
+zo 28-01 @ R
+

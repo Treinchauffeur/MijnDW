@@ -324,7 +324,7 @@ public class MainActivity extends Activity {
     private void handleFileIntent(Uri uri) {
         shiftsFileReader.resetData();
         shiftsFileReader.startConversion(this, uri);
-        shiftsFileContentView.setText(shiftsFileReader.fullFileString());
+        shiftsFileContentView.setText(ShiftsFileReader.fullFileString());
         iCalContentView.setText(shiftsFileReader.getCalendarICS());
 
         if (ShiftsFileReader.dw.size() > 0) {

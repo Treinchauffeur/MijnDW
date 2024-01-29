@@ -6,11 +6,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Bundle;
 import android.util.Log;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.treinchauffeur.mijndw.BuildConfig;
 import com.treinchauffeur.mijndw.R;
 import com.treinchauffeur.mijndw.misc.Logger;
@@ -52,6 +54,7 @@ public class ShiftsFileReader {
     private static final String TAG = "Run";
     public static final int REASON_FAILED_READ = 1, REASON_FAILED_PROCESS = 2;
     public static Uri toRead;
+    private static FirebaseAnalytics analytics;
     @SuppressLint("SimpleDateFormat")
     static SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm");
     public static int staffNumber = -1, weekNumber = -1, yearNumber = -1;
@@ -59,8 +62,12 @@ public class ShiftsFileReader {
     private static final Staff staff = new Staff();
     public Context context;
 
+    private static int errorAtLine = -1;
+
+
     public ShiftsFileReader(Context context) {
         this.context = context;
+        analytics = FirebaseAnalytics.getInstance(context);
     }
 
     /**
@@ -141,7 +148,7 @@ public class ShiftsFileReader {
             //Some DW files are formatted super weirdly, we're fixing that here.
             //The only lines that SHOULD be empty, would be lines 2 & 4 (indexes 1 & 3).
             //Ps I hate doing it this way, will improve this in the future using recursion.
-            if(Objects.equals(fileContents[1], "") && Objects.equals(fileContents[2], "") && Objects.equals(fileContents[3], "") &&
+            if (Objects.equals(fileContents[1], "") && Objects.equals(fileContents[2], "") && Objects.equals(fileContents[3], "") &&
                     Objects.equals(fileContents[5], "") && Objects.equals(fileContents[6], "") && Objects.equals(fileContents[7], "")) {
                 ArrayList<String> temp = new ArrayList<>();
                 originalContents = fileContents;
@@ -149,7 +156,7 @@ public class ShiftsFileReader {
                     temp.add(fileContents[i]);
                 }
 
-                if(temp.size() > 0 && temp.get(4).startsWith("Datum")) {
+                if (temp.size() > 0 && temp.get(4).startsWith("Datum")) {
                     fileContents = new String[temp.size()];
                     for (int i = 0; i < fileContents.length; i++) {
                         fileContents[i] = temp.get(i);
@@ -183,14 +190,15 @@ public class ShiftsFileReader {
      */
     private static boolean processFile(Context context) {
         @SuppressLint("SimpleDateFormat") SimpleDateFormat format = new SimpleDateFormat("HH:mm");
-        java.util.Date date1;
-        java.util.Date date2;
+        java.util.Date date1 = null;
+        java.util.Date date2 = null;
         Calendar cal1 = Calendar.getInstance();
         Calendar cal2 = Calendar.getInstance();
         long diff;
         long diffMinutes;
         long diffHours;
         long minutes;
+        int currentLine = 0;
         boolean isYearSchedule = false; // We assume this to be the case initially.
         try {
             dw.clear();
@@ -198,6 +206,7 @@ public class ShiftsFileReader {
             String startingLine = fileContents[0].replaceAll("\\s+", " ");
             // Check whether schedule is just for one week or an entire year.
             // We can check this using the first line.
+            try {
             if (startingLine.contains("Jaarrooster")) {
                 isYearSchedule = true;
                 weekNumber = Integer.parseInt(startingLine.split(" ")[1]);
@@ -211,10 +220,25 @@ public class ShiftsFileReader {
                     weekNumber = Integer.parseInt(dateYear[0].substring(Math.max(dateYear[0].length() - 2, 0)));
                 yearNumber = Integer.parseInt(dateYear[1]);
             }
+            } catch (NumberFormatException e) {
+                errorAtLine = 0;
+                Log.e(TAG, "Week and/or year number couldn't be read properly!", e);
+                showErrorDialog(context, REASON_FAILED_READ);
+                return true;
+            }
 
             // Third line - staff number
+            currentLine = 2;
             String staffNumberLine = fileContents[2].replaceAll("\\s+", " ");
-            staffNumber = Integer.parseInt(staffNumberLine.split(" ")[0]);
+
+            try {
+                staffNumber = Integer.parseInt(staffNumberLine.split(" ")[0]);
+            } catch (NumberFormatException e) {
+                errorAtLine = 2;
+                Log.e(TAG, "Staff number couldn't be read properly!", e);
+                showErrorDialog(context, REASON_FAILED_READ);
+                return true;
+            }
 
             staff.setStaffNumber(staffNumber);
             staff.setStaffName(staffNumberLine.split(" ")[1] + ". " + staffNumberLine.split(" ")[2]);
@@ -224,6 +248,7 @@ public class ShiftsFileReader {
 
             //Loop through the actual days of the week for code-efficiency, since all days are created equal.
             for (int dayLine = 6; dayLine < fileContents.length; dayLine++) {
+                currentLine = dayLine;
                 Shift shift = new Shift();
                 shift.setStaff(staff);
 
@@ -231,6 +256,8 @@ public class ShiftsFileReader {
                 shift.setRawString(lineToRead);
                 String modifier = "-1";
                 String[] dayArray = lineToRead.split(" ");
+
+                if (lineToRead.equalsIgnoreCase(" ") || lineToRead.equalsIgnoreCase("")) continue;
 
                 //Check if we have modifiers, if yes save them but remove from line.
                 //They'll mess things up, like, big time.
@@ -263,8 +290,15 @@ public class ShiftsFileReader {
                     endTime = dayArray[4];
                 }
 
-                int month = Integer.parseInt(dayArray[1].split("-")[1]);
-                int day = Integer.parseInt(dayArray[1].split("-")[0]);
+                int month = -1;
+                int day = -1;
+                try {
+                    month = Integer.parseInt(dayArray[1].split("-")[1]);
+                    day = Integer.parseInt(dayArray[1].split("-")[0]);
+                } catch (NumberFormatException e) {
+                    errorAtLine = dayLine;
+                    Log.e(TAG, "Month or day couldn't be read properly couldn't be read properly!", e);
+                }
 
                 String startDate;
                 if ((weekNumber == 52 || weekNumber == 53) && month == 1) {// we passed newyear's
@@ -276,8 +310,13 @@ public class ShiftsFileReader {
                 }
 
                 //Make sure the days aren't null. After that, set the shift start time & length.
-                date1 = format.parse(startTime);
-                date2 = format.parse(endTime);
+                try {
+                    date1 = format.parse(startTime);
+                    date2 = format.parse(endTime);
+                } catch (NumberFormatException e) {
+                    errorAtLine = dayLine;
+                    Log.e(TAG, "Start or end time couldn't be read properly couldn't be parsed properly!", e);
+                }
                 assert date1 != null;
                 cal1.setTime(date1);
                 assert date2 != null;
@@ -291,7 +330,14 @@ public class ShiftsFileReader {
                 diffHours = TimeUnit.MILLISECONDS.toHours(diff);
                 minutes = diffMinutes - (diffHours * 60);
 
-                java.util.Date shiftStartDate = sdf.parse(startDate);
+                java.util.Date shiftStartDate = null;
+                try {
+                    shiftStartDate = sdf.parse(startDate);
+                } catch (NumberFormatException e) {
+                    errorAtLine = dayLine;
+                    Log.e(TAG, "Start or end date couldn't be read properly couldn't be parsed properly!", e);
+                }
+
                 assert shiftStartDate != null;
                 long StartMillis = shiftStartDate.getTime();
                 long EndMillis = shiftStartDate.getTime() + diff;
@@ -330,7 +376,8 @@ public class ShiftsFileReader {
             Logger.debug(TAG, "Finished scanning " + toRead.getPath());
             return true;
         } catch (ParseException | ArrayIndexOutOfBoundsException | AssertionError e) {
-            e.printStackTrace();
+            Log.e(TAG, "Exception occurred whilst reading DW on line: " + (currentLine + 1), e);
+            errorAtLine = currentLine;
             return false;
         }
     }
@@ -395,7 +442,7 @@ public class ShiftsFileReader {
         StringBuilder str = new StringBuilder();
 
         //We needed to edit the original lines & saved them for debugging in 'originalContents'.
-        if(originalContents[0] != null) {
+        if (originalContents[0] != null) {
             for (String fileContent : originalContents) {
                 str.append(fileContent).append("\n");
             }
@@ -493,6 +540,7 @@ public class ShiftsFileReader {
     public void resetData() {
         fileContents = new String[13];
         dw = new ArrayList<>();
+        errorAtLine = -1;
     }
 
     /**
@@ -502,21 +550,36 @@ public class ShiftsFileReader {
      * @param reason where something went wrong
      */
     private static void showErrorDialog(Context c, int reason) {
-        String bodyText = (reason == REASON_FAILED_READ) ? "Er is een fout opgetreden tijdens het inlezen van jouw DW." +
+        Bundle params = new Bundle();
+        if (reason == REASON_FAILED_READ) {
+            params.putString("failed_read", "1");
+            analytics.logEvent("failed_read", params);
+        } else if (reason == REASON_FAILED_PROCESS)  {
+            params.putString("failed_process", "1");
+            analytics.logEvent("failed_process", params);
+        }
+
+        String bodyText = "Er is een fout opgetreden tijdens het inlezen van jouw DW." +
                 " Zou je deze willen emailen naar de ontwikkelaar voor analyse zodat deze de app kan verbeteren? :) \n\n" +
-                "Je kan eventueel deze mail zelf nog bewerken om je personeelsnummer en andere gevoelige gegevens aan te passen of te verwijderen."
-                :
-                "Er is een fout opgetreden tijdens het verwerken van jouw DW. " +
-                        " Zou je deze willen emailen naar de ontwikkelaar voor analyse zodat deze de app kan verbeteren? :) \n\n" +
-                        "Je kan eventueel deze mail zelf nog bewerken om je personeelsnummer en andere gevoelige gegevens aan te passen of te verwijderen. \n\n" +
-                        "Toch is het mogelijk dat bepaalde dagen WEL goed verwerkt zijn en deze toe te voegen zijn aan je agenda. Controleer deze goed vóórdat je dit doet!";
+                "Je kan eventueel deze mail zelf nog bewerken om je personeelsnummer en andere gevoelige gegevens aan te passen of te verwijderen.";
+
+        //If the error occurred upon the processing of the individual shifts, display the possibility that some shifts were read properly.
+        if (reason == REASON_FAILED_PROCESS)
+            bodyText += "\n\nToch is het mogelijk dat bepaalde dagen WEL goed" +
+                    " verwerkt zijn en deze toe te voegen zijn aan je agenda. Controleer deze goed vóórdat je dit doet!";
+
+        //Give the user information about where it went wrong, they might include this in a screenshot.
+        if (errorAtLine != -1 && fileContents.length >= errorAtLine) {
+            bodyText += "\n\nDe volgende lijn bevat een fout:\n";
+            bodyText += "'" + fileContents[errorAtLine] + "'\n";
+        }
 
         new MaterialAlertDialogBuilder(c, R.style.ThemeOverlay_App_MaterialErrorDialog)
                 .setTitle("Fout opgetreden")
                 .setIcon(R.drawable.baseline_error_outline_24)
                 .setMessage(bodyText)
 
-                .setPositiveButton("DW E-MAILEN", (dialogInterface, i) -> {
+                .setNegativeButton("DW E-MAILEN", (dialogInterface, i) -> {
                     final Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
                     emailIntent.setData(Uri.parse("mailto:"));
                     emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{Settings.DEV_EMAIL});
@@ -525,6 +588,6 @@ public class ShiftsFileReader {
                             + fullFileString() + "\n\n" + "-------- Mocht je nog iets kwijt willen, graag onder deze lijn --------" + "\n\n");
                     c.startActivity(Intent.createChooser(emailIntent, "E-mail versturen.."));
                 })
-                .setNegativeButton("NEE", (dialogInterface, i) -> dialogInterface.dismiss()).show();
+                .setPositiveButton(reason == REASON_FAILED_PROCESS ? "DOORGAAN" : "NEE", (dialogInterface, i) -> dialogInterface.dismiss()).show();
     }
 }

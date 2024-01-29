@@ -41,11 +41,21 @@ Types of Data Collected
 Personal Data
 While using Our Service, We may ask You to provide Us with certain personally identifiable information that can be used to contact or identify You. Personally identifiable information may include, but is not limited to:
 
-First name and last name
-Work details like employment ID
-Shift number, location and time/date of said shifts.
+-First name and last name
+-Work details like employment ID
+-Shift number, location and time/date of said shifts.
 
-We do not collect any of these details for any remote processing or collecting purposes; they will not leave your device by use of the application.
+We do NOT collect any of these details for any remote processing or collecting purposes; they will not leave your device by use of the application.
+
+For analytical purposes, the following will be made available to the developer:
+
+-IF an error has occurred
+-What type of error has occurred.
+-The amount of DWs that have been loaded.
+
+None of the forementioned personally identifiable information will be included in these analytics.
+Google Analytics / Firebase is used to gain analytics data about the app's usage.
+For more information regarding Firebase's privacy policy, visit: https://firebase.google.com/support/privacy
 
 Contact Us
 If you have any questions about this Privacy Policy, You can contact us:
