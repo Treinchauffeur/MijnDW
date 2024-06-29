@@ -529,6 +529,7 @@ public class ShiftsFileReader {
             case "co":
             case "cf":
             case "ot":
+            case "rt":
             case "ow":
             case "f":
                 return true;
