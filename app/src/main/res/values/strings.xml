@@ -29,4 +29,5 @@
     <string name="divider_in_the_shape">Divider in the shape of a piece of railway</string>
     <string name="privacy_notice_text">Deze app gebruikt de volgende gegevens voor de verwerking van jouw DW: voorletter, achternaam, personeelsnummer en alle overige dienstgegevens waaronder dienstnummer, standplaats en begin- en eindtijden. De verwerking van deze gegevens gebeurt lokaal (offline) op jouw apparaat. Dit houdt dus in dat jouw gegevens niet door de app worden verzonden. Voor de volledige privacyverklaring (in het Engels), zie de button hier beneden.</string>
     <string name="not_affiliatied_text">Deze app \'Mijn DW\' is op geen enkele manier gelieerd aan of verwant met zowel de \'Nederlandse Spoorwegen N.V.\' als \'ProRail B.V.\'</string>
+    <string name="update_available">Er is een update beschikbaar voor Mijn DW! Klik op deze melding om deze te downloaden.</string>
 </resources>

@@ -12,6 +12,7 @@ import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.PowerManager;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -24,8 +25,14 @@ import android.widget.Toast;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.FileProvider;
 
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.materialswitch.MaterialSwitch;
+import com.google.android.play.core.appupdate.AppUpdateInfo;
+import com.google.android.play.core.appupdate.AppUpdateManager;
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory;
+import com.google.android.play.core.install.model.UpdateAvailability;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.treinchauffeur.mijndw.io.ShiftsFileReader;
 import com.treinchauffeur.mijndw.misc.Logger;
@@ -40,7 +47,7 @@ import java.io.OutputStreamWriter;
 import java.util.Objects;
 
 public class MainActivity extends Activity {
-    public static final int PICK_FILE_REQUEST = 1312;
+    public static final int PICK_FILE_REQUEST = 1312, UPDATE_REQUEST_CODE = 1759;
     public static final String TAG = "MainActivity";
     public static boolean isDev = false;
 
@@ -221,6 +228,32 @@ public class MainActivity extends Activity {
 
         performAnimations();
 
+        checkForUpdates();
+    }
+
+    /**
+     * Checks for available updates using the Google Play App-Updates Library.
+     * If there are updates available, we will prompt the user to update using an additional cardview in the main layout.
+     * When the user clicks on this CardView, they will be sent to the Google Play page to manually update.
+     */
+    private void checkForUpdates() {
+        MaterialCardView updateView = findViewById(R.id.updateCard);
+        AppUpdateManager updateManager = AppUpdateManagerFactory.create(this);
+        Task<AppUpdateInfo> appUpdateInfoTask = updateManager.getAppUpdateInfo();
+
+        appUpdateInfoTask.addOnSuccessListener(appUpdateInfo -> {
+            Log.d(TAG, "checkForUpdates: "+appUpdateInfo.updateAvailability());
+            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE) {
+                updateView.setVisibility(View.VISIBLE);
+                updateView.setOnClickListener(v -> {
+                    final String appPackageName = getPackageName();
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName)));
+                    updateView.setVisibility(View.GONE);
+                });
+            }
+        });
+
+        appUpdateInfoTask.addOnFailureListener(this, e -> Log.e(TAG, "onFailure: ", e));
     }
 
     /**
@@ -313,6 +346,9 @@ public class MainActivity extends Activity {
             Logger.debug(TAG, "File retrieved, loading.. " + intent);
             Uri fileUri = intent.getData();
             handleFileIntent(fileUri);
+        }
+        else if (requestCode == UPDATE_REQUEST_CODE && resultCode != RESULT_OK) {
+            Toast.makeText(this, "Update mislukt of geannuleerd!", Toast.LENGTH_SHORT).show();
         }
     }
 
