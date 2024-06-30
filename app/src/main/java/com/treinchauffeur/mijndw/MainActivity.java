@@ -227,7 +227,6 @@ public class MainActivity extends Activity {
         }
 
         performAnimations();
-
         checkForUpdates();
     }
 
@@ -246,6 +245,9 @@ public class MainActivity extends Activity {
             if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE) {
                 updateView.setVisibility(View.VISIBLE);
                 updateView.setOnClickListener(v -> {
+                    Bundle params = new Bundle();
+                    params.putString("inapp_update_triggered", "1");
+                    analytics.logEvent("inapp_update_triggered", params);
                     final String appPackageName = getPackageName();
                     startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName)));
                     updateView.setVisibility(View.GONE);
