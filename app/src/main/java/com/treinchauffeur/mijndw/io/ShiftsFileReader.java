@@ -440,6 +440,7 @@ public class ShiftsFileReader {
      */
     public static String fullFileString() {
         StringBuilder str = new StringBuilder();
+        if(originalContents == null || originalContents.length == 0) return str.toString();
 
         //We needed to edit the original lines & saved them for debugging in 'originalContents'.
         if (originalContents[0] != null) {
