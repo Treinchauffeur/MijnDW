@@ -10,7 +10,7 @@
     <string name="reset">Resetten</string>
     <string name="sharedPrefs">MIJN_DW_ALPHA</string>
     <string name="loadedSuccessDummyText">Week 52 van jaar 9999 geladen!</string>
-    <string name="loadedError">Er is een fout opgetreden!</string>
+    <string name="loadedError">Er is een fout opgetreden!\nGeen diensten gevonden.</string>
     <string name="loadTxtFile">Selecteer .txt bestand</string>
     <string name="background_image">Background image</string>
     <string name="lightbulb_icon">Lightbulb icon</string>

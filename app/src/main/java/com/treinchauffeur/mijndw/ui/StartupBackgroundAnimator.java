@@ -69,23 +69,23 @@ public class StartupBackgroundAnimator {
                         return;
 
                     final long now = SystemClock.uptimeMillis();
-                    final MotionEvent pressEvent = MotionEvent.obtain(now, now, MotionEvent.ACTION_DOWN, 0, 0, 0);
+                    final MotionEvent pressEvent = MotionEvent.obtain(now, now, MotionEvent.ACTION_DOWN, 900, 0, 0);
                     infoCard.dispatchTouchEvent(pressEvent);
                     if (i[0] < max) {
                         i[0]++;
-                        infoCard.postDelayed(this, 5000);
+                        infoCard.postDelayed(this, 2500);
                     } else {
                         finished = true;
                     }
 
                     new Handler().postDelayed(() -> {
                         final long now1 = SystemClock.uptimeMillis();
-                        final MotionEvent cancelEvent = MotionEvent.obtain(now1, now1, MotionEvent.ACTION_CANCEL, 0, 0, 0);
+                        final MotionEvent cancelEvent = MotionEvent.obtain(now1, now1, MotionEvent.ACTION_CANCEL, 900, 0, 0);
                         infoCard.dispatchTouchEvent(cancelEvent);
                     }, 100);
                 }
             };
-            infoCard.postDelayed(animationRunnable, 5000);
+            infoCard.postDelayed(animationRunnable, 2500);
         }
     }
 
