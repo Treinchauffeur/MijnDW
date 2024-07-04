@@ -62,6 +62,8 @@ public class ShiftsFileReader {
     private static final Staff staff = new Staff();
     public Context context;
 
+    private boolean returnDaysOff = false, returOnlyVTA = false;
+
     private static int errorAtLine = -1;
 
 
@@ -76,7 +78,9 @@ public class ShiftsFileReader {
      * @param c   context
      * @param uri user-supplied file
      */
-    public void startConversion(Context c, Uri uri) {
+    public void startConversion(Context c, Uri uri, boolean returnDaysOff, boolean returnOnlyVTA) {
+        this.returnDaysOff = returnDaysOff;
+        this.returOnlyVTA = returnOnlyVTA;
         dw.clear();
         Logger.debug(TAG, "started reading file: ");
         toRead = uri;
@@ -188,7 +192,7 @@ public class ShiftsFileReader {
      *
      * @param context app context used for sending toasts
      */
-    private static boolean processFile(Context context) {
+    private boolean processFile(Context context) {
         @SuppressLint("SimpleDateFormat") SimpleDateFormat format = new SimpleDateFormat("HH:mm");
         java.util.Date date1 = null;
         java.util.Date date2 = null;
@@ -278,13 +282,16 @@ public class ShiftsFileReader {
                 }
 
                 String shiftNumber = dayArray[2];
-                String startTime;
-                String endTime;
+                String startTime = "00:00";
+                String endTime = "00:00";
 
                 //Check if this is a day off work
-                if (isRestingDay(shiftNumber) || dayArray.length < 4) {
+                if (isDayOff(shiftNumber) || dayArray.length < 4) {
                     Logger.debug(TAG, "Staff " + shift.getStaff().getStaffName() + " is free on " + dayArray[1] + ".");
-                    continue;
+                    if (!returnDaysOff)
+                        continue;
+                    else if (returOnlyVTA && !isVTAComponent(shiftNumber))
+                        continue;
                 } else {
                     startTime = dayArray[3];
                     endTime = dayArray[4];
@@ -404,9 +411,9 @@ public class ShiftsFileReader {
             String summaryString;
             if (displayModifiers)
                 summaryString = shift.getShiftNumberModifier().equals("-1") ?
-                        shift.getLocation() + " " + shift.getShiftNumber() :
-                        shift.getLocation() + " " + shift.getShiftNumberModifier() + shift.getShiftNumber();
-            else summaryString = shift.getLocation() + " " + shift.getShiftNumber();
+                        shift.getLocation() + " " + shift.getNeatShiftNumber() :
+                        shift.getLocation() + " " + shift.getShiftNumberModifier() + shift.getNeatShiftNumber();
+            else summaryString = shift.getLocation() + " " + shift.getNeatShiftNumber();
             if (fullDaysOnly)
                 summaryString += " " + new SimpleDateFormat("HH:mm").format(shift.getStartMillis()) + " - " +
                         new SimpleDateFormat("HH:mm").format(shift.getEndMillis());
@@ -420,12 +427,24 @@ public class ShiftsFileReader {
 
             Date start = shift.getStartTime();
             if (fullDaysOnly) event.setDateStart(Utils.atStartOfDay(start));
+            else if(returnDaysOff && !returOnlyVTA && isDayOff(shift.getShiftNumber()))
+                event.setDateStart(Utils.atStartOfDay(start));
+            else if(returnDaysOff && returOnlyVTA && isVTAComponent(shift.getShiftNumber()))
+                event.setDateStart(Utils.atStartOfDay(start));
             else event.setDateStart(start);
+
+            if(!returnDaysOff && isDayOff(shift.getShiftNumber())) continue;
+            if(returnDaysOff && returOnlyVTA && isRegularRestingDay(shift.getShiftNumber())) continue;
 
             Duration duration = fullDaysOnly ?
                     new Duration.Builder().days(1).build() :
                     new Duration.Builder().hours(shift.getLengthHours()).minutes(shift.getLengthMinutes()).build();
             event.setDuration(duration);
+
+            if(isDayOff(shift.getShiftNumber())) {
+                Duration duration2 = new Duration.Builder().days(1).build();
+                event.setDuration(duration2);
+            }
 
             iCal.addEvent(event);
         }
@@ -513,26 +532,53 @@ public class ShiftsFileReader {
     }
 
     /**
+     * A simpler check that determines whether we need to check for starting and ending times of these shifts.
+     * All resting days won't have those.
+     * @param shiftNumber the given shift number to check.
+     * @return whether it is a day off or not.
+     */
+    private boolean isDayOff(String shiftNumber) {
+        return isRegularRestingDay(shiftNumber) || isVTAComponent(shiftNumber);
+    }
+
+    /**
      * Determines whether a shift number (or rather a title?) is a day off, and should be listed as a shift or not.
      *
      * @param shiftNumber the given shift number to check.
      * @return whether it should be listed or not.
      */
-    private static boolean isRestingDay(String shiftNumber) {
+    private static boolean isRegularRestingDay(String shiftNumber) {
         switch (shiftNumber.toLowerCase()) {
             case "r":
             case "streepjesdag":
+            case "wr":
+            case "ro":
+            case "ow":
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Determines whether a shift number (or rather a title?) is a VTA component.
+     * These are days off, but should be handled differently because the user might want to see these
+     * in their calendar instead of regular resting days.
+     *
+     * @param shiftNumber the given shift number to check.
+     * @return whether it should be listed or not.
+     */
+    private static boolean isVTAComponent(String shiftNumber) {
+        switch (shiftNumber.toLowerCase()) {
             case "vl":
             case "gvl":
             case "wa":
-            case "wr":
             case "wv":
             case "co":
             case "cf":
-            case "ro":
             case "ot":
             case "rt":
-            case "ow":
+            case "mt":
             case "f":
                 return true;
             default:

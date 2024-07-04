@@ -4,7 +4,6 @@ package com.treinchauffeur.mijndw;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
-import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -49,15 +48,16 @@ import java.util.Objects;
 public class MainActivity extends Activity {
     public static final int PICK_FILE_REQUEST = 1312, UPDATE_REQUEST_CODE = 1759;
     public static final String TAG = "MainActivity";
-    public static boolean isDev = false;
 
-    ClipboardManager clipboard;
+    public static boolean isDev = false;
+    private boolean returnDaysOff = false, returnOnlyVTA = false;
+
     ShiftsFileReader shiftsFileReader;
     Button btnConvert, btnLoadFile, btnReset;
     EditText shiftsFileContentView, iCalContentView;
     TextView loadedNone, loadedSuccess, loadedError, devHint;
     CardView infoCard, usageCard;
-    MaterialSwitch showProfession, showModifiers, fullDaysOnly;
+    MaterialSwitch showProfession, showModifiers, fullDaysOnly, daysOffSwitch, onlyVTA;
     MaterialToolbar toolbar;
 
     FirebaseAnalytics analytics;
@@ -68,10 +68,10 @@ public class MainActivity extends Activity {
      * Handling a lot of buttons like sending an email to the developer & hidden DevMode option.
      * Also handling all the options the user can set to process their file.
      * Finally, we're animating the background & infoCard.
+     * After all is said and done, we'll check for updates and prompt the user if one is available.
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
@@ -111,6 +111,8 @@ public class MainActivity extends Activity {
         showProfession = findViewById(R.id.professionCheckBox);
         showModifiers = findViewById(R.id.modifiersCheckBox);
         fullDaysOnly = findViewById(R.id.wholeDayCheckBox);
+        daysOffSwitch = findViewById(R.id.daysOffCheckBox);
+        onlyVTA = findViewById(R.id.onlyVTACheckBox);
 
         toolbar.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.devMode) {
@@ -164,7 +166,26 @@ public class MainActivity extends Activity {
         } else {
             fullDaysOnly.setChecked(prefs.getBoolean("fullDaysOnly", false));
         }
+        if (!prefs.contains("daysOff")) {
+            editor.putBoolean("daysOff", daysOffSwitch.isChecked());
+        } else {
+            daysOffSwitch.setChecked(prefs.getBoolean("daysOff", false));
+        }
+        if (!prefs.contains("onlyVTA")) {
+            editor.putBoolean("onlyVTA", onlyVTA.isChecked());
+        } else {
+            onlyVTA.setChecked(prefs.getBoolean("onlyVTA", false));
+        }
         editor.apply();
+
+        if(!daysOffSwitch.isChecked()) {
+            onlyVTA.setChecked(false);
+            onlyVTA.setVisibility(View.GONE);
+        } else {
+            onlyVTA.setVisibility(View.VISIBLE);
+        }
+
+        setShouldReturnDaysOff(daysOffSwitch.isChecked(), onlyVTA.isChecked());
 
         showProfession.setOnCheckedChangeListener((compoundButton, b) -> {
             btnReset.callOnClick();
@@ -188,6 +209,30 @@ public class MainActivity extends Activity {
             SharedPreferences.Editor editor13 = prefs13.edit();
             editor13.putBoolean("fullDaysOnly", compoundButton.isChecked());
             editor13.apply();
+        });
+
+        daysOffSwitch.setOnCheckedChangeListener((compoundButton, b) -> {
+            returnDaysOff = compoundButton.isChecked();
+            btnReset.callOnClick();
+            SharedPreferences prefs14 = getSharedPreferences(getString(R.string.sharedPrefs), Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor14 = prefs14.edit();
+            editor14.putBoolean("daysOff", compoundButton.isChecked());
+            editor14.apply();
+            if(!compoundButton.isChecked()) {
+                onlyVTA.setChecked(false);
+                onlyVTA.setVisibility(View.GONE);
+            } else {
+                onlyVTA.setVisibility(View.VISIBLE);
+            }
+        });
+
+        onlyVTA.setOnCheckedChangeListener((compoundButton, b) -> {
+            returnOnlyVTA = compoundButton.isChecked();
+            btnReset.callOnClick();
+            SharedPreferences prefs15 = getSharedPreferences(getString(R.string.sharedPrefs), Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor15 = prefs15.edit();
+            editor15.putBoolean("onlyVTA", compoundButton.isChecked());
+            editor15.apply();
         });
 
         if (!prefs.contains("dismissedInfoCard")) {
@@ -227,7 +272,7 @@ public class MainActivity extends Activity {
         }
 
         performAnimations();
-        checkForUpdates();
+        checkForAppUpdates();
     }
 
     /**
@@ -235,13 +280,13 @@ public class MainActivity extends Activity {
      * If there are updates available, we will prompt the user to update using an additional cardview in the main layout.
      * When the user clicks on this CardView, they will be sent to the Google Play page to manually update.
      */
-    private void checkForUpdates() {
+    private void checkForAppUpdates() {
         MaterialCardView updateView = findViewById(R.id.updateCard);
         AppUpdateManager updateManager = AppUpdateManagerFactory.create(this);
         Task<AppUpdateInfo> appUpdateInfoTask = updateManager.getAppUpdateInfo();
 
         appUpdateInfoTask.addOnSuccessListener(appUpdateInfo -> {
-            Log.d(TAG, "checkForUpdates: "+appUpdateInfo.updateAvailability());
+            Log.d(TAG, "checkForAppUpdates: "+appUpdateInfo.updateAvailability());
             if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE) {
                 updateView.setVisibility(View.VISIBLE);
                 updateView.setOnClickListener(v -> {
@@ -361,7 +406,7 @@ public class MainActivity extends Activity {
     @SuppressLint("SetTextI18n")
     private void handleFileIntent(Uri uri) {
         shiftsFileReader.resetData();
-        shiftsFileReader.startConversion(this, uri);
+        shiftsFileReader.startConversion(this, uri, returnDaysOff, returnOnlyVTA);
         shiftsFileContentView.setText(ShiftsFileReader.fullFileString());
         iCalContentView.setText(shiftsFileReader.getCalendarICS());
 
@@ -420,4 +465,17 @@ public class MainActivity extends Activity {
             btnConvert.setVisibility(View.GONE);
         }
     }
+
+    /**
+     * The user might want to add their days off as individual calendar items to their calendar.
+     * This is where those options are defined.
+     * @param daysOff whether we should return days off as calendar items.
+     * @param onlyVTA whether we should ONLY return VTA components (VL, CF etc.) as calendar items instead of regular days off (R, -, WV, etc.)
+     */
+    public void setShouldReturnDaysOff(boolean daysOff, boolean onlyVTA) {
+        returnDaysOff = daysOff;
+        returnOnlyVTA = onlyVTA;
+    }
+
+
 }

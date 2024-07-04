@@ -176,4 +176,59 @@ public class Shift {
     public void setEndMillis(long endMillis) {
         this.endMillis = endMillis;
     }
+
+    public String getNeatShiftNumber() {
+        switch(shiftNumber.toLowerCase()) {
+            case "r":
+                return "Rustdag";
+            case "streepjesdag":
+                return "Streepjesdag";
+            case "gvl":
+                return "Gegarandeerd verlof";
+            case "vl":
+                return "Verlof";
+            case "wr":
+                return "WTV rustdag";
+            case "wa":
+                return "WTV aangewezen rustdag";
+            case "wv":
+                return "WTV vrij opgenomen rustdag";
+            case "ro":
+                return "RO-dag";
+            case "ow":
+                return "OW-dag";
+            case "rt":
+                return "Rustdag terug";
+            case "ot":
+                return "Overuren terug";
+            case "co":
+                return "Compensatie onregelmatigheid";
+            case "cf":
+                return "Compensatie feestdag";
+            case "f":
+                return "Feestdag";
+            case "mt":
+                return "Meeruren terug";
+            case "curs":
+                return "Cursus";
+            case "p":
+                return "Praktijk";
+            case "mons":
+                return "Medisch onderzoek";
+            case "pons":
+                return "Psychologisch onderzoek";
+            case "mat":
+                return "Materieel(cursus)";
+            case "w":
+                return "Wegleren/wegonderhoud";
+            case "ba":
+                return "Betaald afwezig";
+            case "oa":
+                return "Onbetaald afwezig";
+            case "eg":
+                return "Extra gezinsverlof";
+            default:
+                return shiftNumber;
+        }
+    }
 }
