@@ -527,13 +527,12 @@ public class ShiftsFileReader {
                 return true;
             default:
                 return false;
-
         }
     }
 
     /**
      * A simpler check that determines whether we need to check for starting and ending times of these shifts.
-     * All resting days won't have those.
+     * No resting days Should have those.
      * @param shiftNumber the given shift number to check.
      * @return whether it is a day off or not.
      */
@@ -551,6 +550,7 @@ public class ShiftsFileReader {
         switch (shiftNumber.toLowerCase()) {
             case "r":
             case "streepjesdag":
+            case "--":
             case "wr":
             case "ro":
             case "ow":

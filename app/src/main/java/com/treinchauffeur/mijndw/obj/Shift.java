@@ -182,6 +182,7 @@ public class Shift {
             case "r":
                 return "Rustdag";
             case "streepjesdag":
+            case "--":
                 return "Streepjesdag";
             case "gvl":
                 return "Gegarandeerd verlof";

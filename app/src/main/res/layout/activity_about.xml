@@ -132,7 +132,8 @@
                         android:layout_height="100dp"
                         app:cardBackgroundColor="?attr/colorPrimary"
                         android:layout_gravity="center"
-                        app:strokeWidth="0dp">
+                        app:strokeWidth="0dp"
+                        android:layout_marginTop="10dp">
 
                         <ImageView
                             android:id="@+id/appBadgeImage"
@@ -148,6 +149,7 @@
                     </com.google.android.material.card.MaterialCardView>
 
                     <TextView
+                        android:layout_marginTop="10dp"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
@@ -172,13 +174,6 @@
                             android:layout_height="wrap_content"
                             android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
                             android:text="@string/app_version" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
-                            android:text=" Beta"
-                            tools:ignore="HardcodedText" />
                     </LinearLayout>
 
                     <ImageView
