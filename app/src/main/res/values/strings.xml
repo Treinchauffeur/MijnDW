@@ -31,6 +31,7 @@
     <string name="not_affiliatied_text">Deze app \'Mijn DW\' is op geen enkele manier gelieerd aan of verwant met zowel de \'Nederlandse Spoorwegen N.V.\' als \'ProRail B.V.\'</string>
     <string name="update_available">Er is een update beschikbaar voor Mijn DW! Klik op deze melding om de update te downloaden.</string>
     <string name="close">Close</string>
-    <string name="rustdagen_k_opslaan_in_agenda">Rustdagen óók opslaan in agenda.</string>
+    <string name="rustdagen_k_opslaan_in_agenda">Rustdagen opslaan in agenda.</string>
     <string name="alleen_vta_componenten_weergeven">Alleen VTA-componenten weergeven.\nBijv. Verlof, CF-dag etc.</string>
+    <string name="nieuw_rustdagen">Nieuw! Je kunt nu óók rustdagen en/of VTA-componenten (VL, CF etc.) toevoegen.</string>
 </resources>

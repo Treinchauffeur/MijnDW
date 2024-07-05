@@ -322,6 +322,15 @@
                         android:layout_marginBottom="10dp"
                         android:layout_marginHorizontal="10dp" />
 
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/newFeatureTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/nieuw_rustdagen"
+                        android:gravity="center"
+                        android:drawableTop="@drawable/baseline_new_releases_20"
+                        android:layout_marginBottom="10dp"/>
+
                     <com.google.android.material.materialswitch.MaterialSwitch
                         android:id="@+id/daysOffCheckBox"
                         android:text="@string/rustdagen_k_opslaan_in_agenda"

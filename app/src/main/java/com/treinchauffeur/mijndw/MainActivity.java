@@ -171,11 +171,19 @@ public class MainActivity extends Activity {
         } else {
             daysOffSwitch.setChecked(prefs.getBoolean("daysOff", false));
         }
+
         if (!prefs.contains("onlyVTA")) {
             editor.putBoolean("onlyVTA", onlyVTA.isChecked());
         } else {
             onlyVTA.setChecked(prefs.getBoolean("onlyVTA", false));
         }
+
+        if (!prefs.contains("whatsNew")) {
+            //editor.putString("whatsNew", BuildConfig.VERSION_NAME);
+        } else {
+            findViewById(R.id.newFeatureTextView).setVisibility(View.GONE);
+        }
+
         editor.apply();
 
         if(!daysOffSwitch.isChecked()) {
@@ -212,12 +220,16 @@ public class MainActivity extends Activity {
         });
 
         daysOffSwitch.setOnCheckedChangeListener((compoundButton, b) -> {
-            returnDaysOff = compoundButton.isChecked();
-            btnReset.callOnClick();
             SharedPreferences prefs14 = getSharedPreferences(getString(R.string.sharedPrefs), Context.MODE_PRIVATE);
             SharedPreferences.Editor editor14 = prefs14.edit();
             editor14.putBoolean("daysOff", compoundButton.isChecked());
+            if(findViewById(R.id.newFeatureTextView).getVisibility() == View.VISIBLE) {
+                editor14.putString("whatsNew", BuildConfig.VERSION_NAME);
+                findViewById(R.id.newFeatureTextView).setVisibility(View.GONE);
+            }
             editor14.apply();
+            returnDaysOff = compoundButton.isChecked();
+            btnReset.callOnClick();
             if(!compoundButton.isChecked()) {
                 onlyVTA.setChecked(false);
                 onlyVTA.setVisibility(View.GONE);
