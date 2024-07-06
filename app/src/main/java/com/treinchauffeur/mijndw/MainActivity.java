@@ -26,14 +26,16 @@ import androidx.core.content.FileProvider;
 
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.appbar.MaterialToolbar;
-import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.materialswitch.MaterialSwitch;
 import com.google.android.play.core.appupdate.AppUpdateInfo;
 import com.google.android.play.core.appupdate.AppUpdateManager;
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory;
 import com.google.android.play.core.install.model.UpdateAvailability;
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
+import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 import com.treinchauffeur.mijndw.io.ShiftsFileReader;
+import com.treinchauffeur.mijndw.misc.Circus;
 import com.treinchauffeur.mijndw.misc.Logger;
 import com.treinchauffeur.mijndw.misc.Settings;
 import com.treinchauffeur.mijndw.ui.ContinuousBackgroundAnimator;
@@ -43,7 +45,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.StringReader;
 import java.util.Objects;
+import java.util.Properties;
 
 public class MainActivity extends Activity {
     public static final int PICK_FILE_REQUEST = 1312, UPDATE_REQUEST_CODE = 1759;
@@ -56,7 +60,7 @@ public class MainActivity extends Activity {
     Button btnConvert, btnLoadFile, btnReset;
     EditText shiftsFileContentView, iCalContentView;
     TextView loadedNone, loadedSuccess, loadedError, devHint;
-    CardView infoCard, usageCard;
+    CardView welcomeCard, usageCard, updateCard, remoteCard;
     MaterialSwitch showProfession, showModifiers, fullDaysOnly, daysOffSwitch, onlyVTA;
     MaterialToolbar toolbar;
 
@@ -106,8 +110,10 @@ public class MainActivity extends Activity {
         loadedNone = findViewById(R.id.loadedNone);
         loadedSuccess = findViewById(R.id.loadedSuccessfully);
         loadedError = findViewById(R.id.loadedError);
-        infoCard = findViewById(R.id.infoCard);
+        welcomeCard = findViewById(R.id.infoCard);
         usageCard = findViewById(R.id.usageCard);
+        updateCard = findViewById(R.id.updateCard);
+        remoteCard = findViewById(R.id.remoteCard);
         showProfession = findViewById(R.id.professionCheckBox);
         showModifiers = findViewById(R.id.modifiersCheckBox);
         fullDaysOnly = findViewById(R.id.wholeDayCheckBox);
@@ -186,7 +192,7 @@ public class MainActivity extends Activity {
 
         editor.apply();
 
-        if(!daysOffSwitch.isChecked()) {
+        if (!daysOffSwitch.isChecked()) {
             onlyVTA.setChecked(false);
             onlyVTA.setVisibility(View.GONE);
         } else {
@@ -223,14 +229,14 @@ public class MainActivity extends Activity {
             SharedPreferences prefs14 = getSharedPreferences(getString(R.string.sharedPrefs), Context.MODE_PRIVATE);
             SharedPreferences.Editor editor14 = prefs14.edit();
             editor14.putBoolean("daysOff", compoundButton.isChecked());
-            if(findViewById(R.id.newFeatureTextView).getVisibility() == View.VISIBLE) {
+            if (findViewById(R.id.newFeatureTextView).getVisibility() == View.VISIBLE) {
                 editor14.putString("whatsNew", BuildConfig.VERSION_NAME);
                 findViewById(R.id.newFeatureTextView).setVisibility(View.GONE);
             }
             editor14.apply();
             returnDaysOff = compoundButton.isChecked();
             btnReset.callOnClick();
-            if(!compoundButton.isChecked()) {
+            if (!compoundButton.isChecked()) {
                 onlyVTA.setChecked(false);
                 onlyVTA.setVisibility(View.GONE);
             } else {
@@ -248,15 +254,15 @@ public class MainActivity extends Activity {
         });
 
         if (!prefs.contains("dismissedInfoCard")) {
-            infoCard.setOnClickListener(view -> {
-                infoCard.setVisibility(View.GONE);
+            welcomeCard.setOnClickListener(view -> {
+                welcomeCard.setVisibility(View.GONE);
                 SharedPreferences prefs12 = getSharedPreferences(getString(R.string.sharedPrefs), Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor12 = prefs12.edit();
                 editor12.putBoolean("dismissedInfoCard", true);
                 editor12.apply();
             });
         } else {
-            infoCard.setVisibility(View.GONE);
+            welcomeCard.setVisibility(View.GONE);
         }
 
         btnReset.setOnClickListener(view -> {
@@ -285,6 +291,51 @@ public class MainActivity extends Activity {
 
         performAnimations();
         checkForAppUpdates();
+        remoteConfig();
+
+        Circus circus = new Circus(this, toolbar);
+        circus.startTheShow();
+    }
+
+    /**
+     * We want to send the users a message in the case of something like a bug being found.
+     * If a message is sent through the Firebase console, all other non-essential cards will be hidden.
+     * A message will be displayed when the returned calue of the message does NOT equal
+     * (or NOT end with)'inop'.
+     */
+    private void remoteConfig() {
+        FirebaseRemoteConfig firebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
+        FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
+                .setMinimumFetchIntervalInSeconds(30)
+                .build();
+        firebaseRemoteConfig.setConfigSettingsAsync(configSettings);
+        firebaseRemoteConfig.setDefaultsAsync(R.xml.remote_config_defaults);
+
+        firebaseRemoteConfig.fetchAndActivate()
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        task.getResult();
+                        String message = firebaseRemoteConfig.getString("remote_message");
+                        String formattedMessage = message;
+                        try {
+                            Properties properties = new Properties();
+                            properties.load(new StringReader("key = " + message));
+                            formattedMessage = properties.getProperty("key");
+                        } catch (IOException e) {
+                            Log.e(TAG, "remoteConfig: Couldn't format returned string, falling back!", e);
+                        }
+                        Log.d(TAG, "remoteConfig message: " + message);
+                        if (!message.endsWith("inop")) {
+                            welcomeCard.setVisibility(View.GONE);
+                            updateCard.setVisibility(View.GONE);
+                            remoteCard.setVisibility(View.VISIBLE);
+                            ((TextView) remoteCard.findViewById(R.id.remoteTextView)).setText(formattedMessage);
+                        }
+                    } else {
+                        Toast.makeText(MainActivity.this, "Firebase remoteConfig couldn't be fetched!",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     /**
@@ -293,21 +344,21 @@ public class MainActivity extends Activity {
      * When the user clicks on this CardView, they will be sent to the Google Play page to manually update.
      */
     private void checkForAppUpdates() {
-        MaterialCardView updateView = findViewById(R.id.updateCard);
+
         AppUpdateManager updateManager = AppUpdateManagerFactory.create(this);
         Task<AppUpdateInfo> appUpdateInfoTask = updateManager.getAppUpdateInfo();
 
         appUpdateInfoTask.addOnSuccessListener(appUpdateInfo -> {
-            Log.d(TAG, "checkForAppUpdates: "+appUpdateInfo.updateAvailability());
+            Log.d(TAG, "checkForAppUpdates: " + appUpdateInfo.updateAvailability());
             if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE) {
-                updateView.setVisibility(View.VISIBLE);
-                updateView.setOnClickListener(v -> {
+                updateCard.setVisibility(View.VISIBLE);
+                updateCard.setOnClickListener(v -> {
                     Bundle params = new Bundle();
                     params.putString("inapp_update_triggered", "1");
                     analytics.logEvent("inapp_update_triggered", params);
                     final String appPackageName = getPackageName();
                     startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName)));
-                    updateView.setVisibility(View.GONE);
+                    updateCard.setVisibility(View.GONE);
                 });
             }
         });
@@ -405,14 +456,14 @@ public class MainActivity extends Activity {
             Logger.debug(TAG, "File retrieved, loading.. " + intent);
             Uri fileUri = intent.getData();
             handleFileIntent(fileUri);
-        }
-        else if (requestCode == UPDATE_REQUEST_CODE && resultCode != RESULT_OK) {
+        } else if (requestCode == UPDATE_REQUEST_CODE && resultCode != RESULT_OK) {
             Toast.makeText(this, "Update mislukt of geannuleerd!", Toast.LENGTH_SHORT).show();
         }
     }
 
     /**
      * Starts reading the file & checks whether it's valid.
+     *
      * @param uri URI that points to the file
      */
     @SuppressLint("SetTextI18n")
@@ -481,6 +532,7 @@ public class MainActivity extends Activity {
     /**
      * The user might want to add their days off as individual calendar items to their calendar.
      * This is where those options are defined.
+     *
      * @param daysOff whether we should return days off as calendar items.
      * @param onlyVTA whether we should ONLY return VTA components (VL, CF etc.) as calendar items instead of regular days off (R, -, WV, etc.)
      */

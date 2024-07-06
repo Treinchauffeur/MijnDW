@@ -34,4 +34,6 @@
     <string name="rustdagen_k_opslaan_in_agenda">Rustdagen opslaan in agenda.</string>
     <string name="alleen_vta_componenten_weergeven">Alleen VTA-componenten weergeven.\nBijv. Verlof, CF-dag etc.</string>
     <string name="nieuw_rustdagen">Nieuw! Je kunt nu óók rustdagen en/of VTA-componenten (VL, CF etc.) toevoegen.</string>
+    <string name="warning_symbol">Warning symbol</string>
+    <string name="bericht_van_de_ontwikkelaar_n_nblablablablabla_blablablablablablablablablabla_blablablablabla_blablablablablablablablablabla">Bericht van de ontwikkelaar:\n\nBLABLABLABLABLA BLABLABLABLABLABLABLABLABLABLA BLABLABLABLABLA BLABLABLABLABLABLABLABLABLABLA</string>
 </resources>
