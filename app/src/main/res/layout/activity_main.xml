@@ -274,7 +274,7 @@
 
                     <ImageView
                         android:padding="10dp"
-                        android:src="@drawable/dwergsein"
+                        android:src="@drawable/laagsein"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:contentDescription="@string/lightbulb_icon"

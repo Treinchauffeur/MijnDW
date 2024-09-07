@@ -173,7 +173,8 @@ public class ShiftsFileReader {
                 return false;
             }
 
-            if (fileContents[12].startsWith("zo")) {
+            //Temporary fix to be able to read two shifts that apply to one single day.
+            if (fileContents[12].startsWith("zo") || fileContents[13].startsWith("zo")) {
                 return true;
             }
         } catch (IOException e) {
