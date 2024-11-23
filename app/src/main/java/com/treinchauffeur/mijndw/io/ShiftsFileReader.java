@@ -160,7 +160,7 @@ public class ShiftsFileReader {
                     temp.add(fileContents[i]);
                 }
 
-                if (temp.size() > 0 && temp.get(4).startsWith("Datum")) {
+                if (!temp.isEmpty() && temp.get(4).startsWith("Datum")) {
                     fileContents = new String[temp.size()];
                     for (int i = 0; i < fileContents.length; i++) {
                         fileContents[i] = temp.get(i);
@@ -310,11 +310,9 @@ public class ShiftsFileReader {
 
                 String startDate;
                 if ((weekNumber == 52 || weekNumber == 53) && month == 1) {// we passed newyear's
-                    startDate = "" + day + "-" + month + "-" + (yearNumber + 1) + " " + startTime
-                            + "";
+                    startDate = day + "-" + month + "-" + (yearNumber + 1) + " " + startTime;
                 } else {
-                    startDate = "" + day + "-" + month + "-" + yearNumber + " " + startTime
-                            + "";
+                    startDate = day + "-" + month + "-" + yearNumber + " " + startTime;
                 }
 
                 //Make sure the days aren't null. After that, set the shift start time & length.
@@ -401,12 +399,24 @@ public class ShiftsFileReader {
         boolean displayModifiers = prefs.getBoolean("displayModifiers", true);
         boolean fullDaysOnly = prefs.getBoolean("fullDaysOnly", false);
         boolean displayProfession = prefs.getBoolean("displayProfession", true);
+        String[] toIgnore = prefs.getString("toIgnore", "").split(",");
+        String[] replace = prefs.getString("replacement", "").split(",");
+        String prefix = prefs.getString("prefix", "");
 
         String ics = "";
         ICalendar iCal = new ICalendar();
 
         for (Shift shift : dw) {
             if (shift.getShiftNumber().equals("!!!")) continue;
+
+            boolean shouldSkip = false;
+            for(String s : toIgnore) {
+                if (shift.getShiftNumber().equalsIgnoreCase(s)) {
+                    shouldSkip = true;
+                    break;
+                }
+            }
+            if(shouldSkip) continue;
 
             VEvent event = new VEvent();
             String summaryString;
@@ -420,6 +430,19 @@ public class ShiftsFileReader {
                         new SimpleDateFormat("HH:mm").format(shift.getEndMillis());
 
             summaryString = displayProfession ? (shift.getProfession() + " " + summaryString) : summaryString;
+
+            //We can add a prefix to the summary string based on the users preferences (advanced settings activity)
+            if(!prefix.isEmpty()) summaryString = prefix + " " + summaryString;
+
+            //There is an option to replace the summary string when certain shift numbers are found.
+            //This is also a user preference.
+            for(String s : replace) {
+                if (shift.getShiftNumber().equalsIgnoreCase(s.split(";")[0])) {
+                        summaryString = s.split(";")[1];
+                    break;
+                }
+            }
+
             Summary summary = event.setSummary(summaryString);
 
             Description description = event.setDescription(shift.getRawString());
@@ -450,9 +473,29 @@ public class ShiftsFileReader {
             iCal.addEvent(event);
         }
 
-        ics += Biweekly.write(iCal).go();
-        return ics;
+        //Analytics logic
+        String standplaats = "";
+        for(Shift shift : dw) {
+            if(!shift.getLocation().isBlank() && !shift.getLocation().equalsIgnoreCase("!!!"))
+                standplaats = shift.getLocation();
+        }
+        if(!standplaats.equals("!!!") && !standplaats.isBlank()) {
+            Bundle params = new Bundle();
+            params.putString("standplaats", standplaats);
+            analytics.logEvent("standplaats", params);
 
+            for(Shift shift : dw) {
+                if(!shift.getLocation().equalsIgnoreCase(standplaats)) {
+                    Bundle params2 = new Bundle();
+                    params2.putString("wisselende_standplaatsen", "1");
+                    analytics.logEvent("wisselende_standplaatsen", params2);
+                    break;
+                }
+            }
+        }
+        ics += Biweekly.write(iCal).go();
+
+        return ics;
     }
 
     /**
@@ -491,44 +534,12 @@ public class ShiftsFileReader {
      * @
      */
     public static boolean isShiftModifier(String modifier) {
-        switch (modifier) {
-            case "!":
-            case "@":
-            case ">":
-            case "<":
-            case "*":
-            case "?":
-            case "E":
-            case "#":
-            case "$":
-            case "%":
-            case "=":
-            case "P":
-            case "P!":
-            case "P@":
-            case "P>":
-            case "P<":
-            case "P*":
-            case "P?":
-            case "PE":
-            case "P#":
-            case "P$":
-            case "P%":
-            case "P=":
-            case "E!":
-            case "E@":
-            case "E>":
-            case "E<":
-            case "E*":
-            case "E?":
-            case "E#":
-            case "E$":
-            case "E%":
-            case "E=":
-                return true;
-            default:
-                return false;
-        }
+        return switch (modifier) {
+            case "!", "@", ">", "<", "*", "?", "E", "#", "$", "%", "=", "P", "P!", "P@", "P>", "P<",
+                 "P*", "P?", "PE", "P#", "P$", "P%", "P=", "E!", "E@", "E>", "E<", "E*", "E?", "E#",
+                 "E$", "E%", "E=" -> true;
+            default -> false;
+        };
     }
 
     /**
@@ -548,17 +559,10 @@ public class ShiftsFileReader {
      * @return whether it should be listed or not.
      */
     private static boolean isRegularRestingDay(String shiftNumber) {
-        switch (shiftNumber.toLowerCase()) {
-            case "r":
-            case "streepjesdag":
-            case "--":
-            case "wr":
-            case "ro":
-            case "ow":
-                return true;
-            default:
-                return false;
-        }
+        return switch (shiftNumber.toLowerCase()) {
+            case "r", "streepjesdag", "--", "wr", "ro", "ow" -> true;
+            default -> false;
+        };
     }
 
     /**
@@ -570,21 +574,10 @@ public class ShiftsFileReader {
      * @return whether it should be listed or not.
      */
     private static boolean isVTAComponent(String shiftNumber) {
-        switch (shiftNumber.toLowerCase()) {
-            case "vl":
-            case "gvl":
-            case "wa":
-            case "wv":
-            case "co":
-            case "cf":
-            case "ot":
-            case "rt":
-            case "mt":
-            case "f":
-                return true;
-            default:
-                return false;
-        }
+        return switch (shiftNumber.toLowerCase()) {
+            case "vl", "gvl", "wa", "wv", "co", "cf", "ot", "rt", "mt", "eg", "f" -> true;
+            default -> false;
+        };
     }
 
     /**

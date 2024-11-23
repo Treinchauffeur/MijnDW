@@ -15,8 +15,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MijnDW"
-        tools:targetApi="34"
-        android:targetSdkVersion="34">
+        tools:targetApi="35"
+        android:targetSdkVersion="35">
         
         <activity
             android:name=".MainActivity"
@@ -46,6 +46,15 @@
 
         <activity
             android:name=".AboutActivity"
+            android:exported="true">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="" />
+        </activity>
+
+        <activity
+            android:windowSoftInputMode="adjustResize"
+            android:name=".SettingsActivity"
             android:exported="true">
             <meta-data
                 android:name="android.app.lib_name"

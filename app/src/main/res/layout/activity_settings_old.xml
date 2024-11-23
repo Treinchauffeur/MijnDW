@@ -1,0 +1,353 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <ScrollView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        tools:context=".SettingsActivity"
+        android:screenReaderFocusable="true"
+        android:id="@+id/scrollViewMain"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:elevation="1dp"
+        android:scrollbarSize="0dp">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/bgImageCalendarAbout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="40dp"
+                android:layout_marginEnd="-40dp"
+                android:alpha="50"
+                android:contentDescription="@string/background_image"
+                android:src="@drawable/ic_baseline_calendar_bg_150"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/bgImageTrainICMAbout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="-40dp"
+                android:layout_marginTop="20dp"
+                android:alpha="50"
+                android:contentDescription="@string/background_image"
+                android:src="@drawable/train_icm"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/bgImageTrainVIRMAbout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="-180dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="11dp"
+                android:alpha="50"
+                android:contentDescription="@string/background_image"
+                android:src="@drawable/train_virm"
+                app:layout_constraintBottom_toBottomOf="@+id/bgImageTrainVelaroAbout"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <ImageView
+                android:id="@+id/bgImageTrainLocAbout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="-135dp"
+                android:layout_marginBottom="20dp"
+                android:alpha="50"
+                android:contentDescription="@string/background_image"
+                android:scaleX="-1"
+                android:src="@drawable/train_loc"
+                app:layout_constraintBottom_toTopOf="@id/bgImageTrainVelaroAbout"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <ImageView
+                android:id="@+id/bgImageTrainVelaroAbout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="-60dp"
+                android:layout_marginBottom="20dp"
+                android:alpha="50"
+                android:contentDescription="@string/background_image"
+                android:scaleX="-1"
+                android:src="@drawable/train_velaro"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <ImageView
+                android:id="@+id/bgImageClockAbout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="-50dp"
+                android:layout_marginBottom="20dp"
+                android:alpha="50"
+                android:contentDescription="@string/background_image"
+                android:scaleX="-1"
+                android:src="@drawable/ic_outline_access_time_180"
+                app:layout_constraintBottom_toTopOf="@id/bgImageTrainVIRMAbout"
+                app:layout_constraintStart_toStartOf="parent" />
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:animateLayoutChanges="true"
+                android:orientation="vertical"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <com.google.android.material.appbar.MaterialToolbar
+                    android:id="@+id/toolbarAbout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="60dp"
+                    android:layout_marginBottom="10dp"
+                    app:navigationIcon="@drawable/ic_baseline_arrow_back_30"
+                    app:title="Instellingen"
+                    app:titleTextAppearance="@style/TextAppearance.Material3.DisplaySmall"
+                    app:titleTextColor="?attr/colorOnSecondaryContainer" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/settingsCard"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="20dp"
+                    app:cardBackgroundColor="?attr/colorSurface"
+                    app:cardCornerRadius="30dp"
+                    app:cardElevation="0dp"
+                    app:contentPaddingTop="10dp"
+                    app:strokeWidth="0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center_horizontal"
+                        android:orientation="vertical">
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:id="@+id/settingsFirstOption"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_horizontal"
+                            android:orientation="vertical"
+                            android:padding="10dp">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_margin="10dp"
+                                android:paddingEnd="20dp"
+                                android:text="Agendapunten duren hele dagen"
+                                android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                                android:textColor="?attr/colorOnSecondaryContainer"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintEnd_toStartOf="@+id/wholeDaysCheckBox"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                tools:ignore="RtlSymmetry" />
+
+                            <com.google.android.material.materialswitch.MaterialSwitch
+                                android:id="@+id/wholeDaysCheckBox"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginHorizontal="10dp"
+                                android:checked="false"
+                                android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintTop_toTopOf="parent" />
+
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+                        <com.google.android.material.divider.MaterialDivider
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_marginHorizontal="20dp"
+                            app:dividerColor="?attr/colorSecondary" />
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:id="@+id/settingsSecondOption"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_horizontal"
+                            android:orientation="vertical"
+                            android:padding="10dp">
+
+                            <TextView
+                                android:id="@+id/settingsSecondTitle"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_margin="10dp"
+                                android:text="Dienstnummers om te negeren"
+                                android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                                android:textColor="?attr/colorOnSecondaryContainer"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                tools:ignore="RtlSymmetry" />
+
+                            <TextView
+                                android:id="@+id/settingsSecondText"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginHorizontal="10dp"
+                                android:text="Deze dienstnummers worden niet verwerkt door de app en zullen daarom ook niet toegevoegd worden aan de kalender. Dit is met name handig voor collega's met nevenfuncties. Splits meerdere diensten met een komma. Bijv: 'TWO,5015,WA' etc."
+                                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                                android:textColor="?attr/colorOnSurface"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toBottomOf="@id/settingsSecondTitle"
+                                tools:ignore="RtlSymmetry" />
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_margin="20dp"
+                                android:hint="Dienstnummers"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toBottomOf="@id/settingsSecondText">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/ignoreEditText"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:imeOptions="actionDone" />
+
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+                        <com.google.android.material.divider.MaterialDivider
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_marginHorizontal="20dp"
+                            android:layout_marginTop="10dp"
+                            app:dividerColor="?attr/colorSecondary" />
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:id="@+id/settingsThirdOption"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_horizontal"
+                            android:orientation="vertical"
+                            android:padding="10dp">
+
+                            <TextView
+                                android:id="@+id/settingsThirdTitle"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_margin="10dp"
+                                android:text="Agendapunten hebben een prefix"
+                                android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                                android:textColor="?attr/colorOnSecondaryContainer"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                tools:ignore="RtlSymmetry" />
+
+                            <TextView
+                                android:id="@+id/settingsThirdText"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginHorizontal="10dp"
+                                android:text="De titels van de agendapunten zullen starten met deze zogenaamde prefix plus een spatie. Bijvoorbeeld: 'Treindienst' HC Asd 123."
+                                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                                android:textColor="?attr/colorOnSurface"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toBottomOf="@id/settingsThirdTitle"
+                                tools:ignore="RtlSymmetry" />
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_margin="20dp"
+                                android:hint="Prefix"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toBottomOf="@id/settingsThirdText">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/prefixEditText"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:imeOptions="actionDone" />
+
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+                        <com.google.android.material.divider.MaterialDivider
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_marginHorizontal="20dp"
+                            android:layout_marginTop="10dp"
+                            app:dividerColor="?attr/colorSecondary" />
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:id="@+id/settingsFourthOption"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_horizontal"
+                            android:orientation="vertical"
+                            android:padding="10dp">
+
+                            <TextView
+                                android:id="@+id/settingsFourthTitle"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_margin="10dp"
+                                android:text="Vervangende titels"
+                                android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                                android:textColor="?attr/colorOnSecondaryContainer"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                tools:ignore="RtlSymmetry" />
+
+                            <TextView
+                                android:id="@+id/settingsFourthText"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginHorizontal="10dp"
+                                android:text="De app ondersteunt de mogelijkheid om bepaalde dienstnummers een andere titel te geven in de agenda. Gebruik: '5015;Kantoordienst,1001;Instructie geven'. Dit voorbeeld maakt het dat diensten met nummer 5015 de titel 'Kantoordienst' krijgen, dienstnummer 1001 wordt 'Instructie geven' etc."
+                                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                                android:textColor="?attr/colorOnSurface"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintHorizontal_bias="1.0"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toBottomOf="@id/settingsFourthTitle"
+                                tools:ignore="RtlSymmetry" />
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_margin="20dp"
+                                android:hint="Vervangingstekst"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toBottomOf="@id/settingsFourthText">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/replacementEditText"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:imeOptions="actionDone" />
+
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

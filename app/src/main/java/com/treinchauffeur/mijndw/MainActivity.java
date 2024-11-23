@@ -57,11 +57,11 @@ public class MainActivity extends Activity {
     private boolean returnDaysOff = false, returnOnlyVTA = false;
 
     ShiftsFileReader shiftsFileReader;
-    Button btnConvert, btnLoadFile, btnReset;
+    Button btnConvert, btnLoadFile, btnReset, buttonSettings;
     EditText shiftsFileContentView, iCalContentView;
     TextView loadedNone, loadedSuccess, loadedError, devHint;
     CardView welcomeCard, usageCard, updateCard, remoteCard;
-    MaterialSwitch showProfession, showModifiers, fullDaysOnly, daysOffSwitch, onlyVTA;
+    MaterialSwitch showProfession, showModifiers, daysOffSwitch, onlyVTA;
     MaterialToolbar toolbar;
 
     FirebaseAnalytics analytics;
@@ -107,6 +107,7 @@ public class MainActivity extends Activity {
         btnLoadFile = findViewById(R.id.btnLoadFile);
         btnConvert = findViewById(R.id.btnConvertFile);
         btnReset = findViewById(R.id.btnReset);
+        buttonSettings = findViewById(R.id.advancedSettingsButton);
         loadedNone = findViewById(R.id.loadedNone);
         loadedSuccess = findViewById(R.id.loadedSuccessfully);
         loadedError = findViewById(R.id.loadedError);
@@ -116,7 +117,6 @@ public class MainActivity extends Activity {
         remoteCard = findViewById(R.id.remoteCard);
         showProfession = findViewById(R.id.professionCheckBox);
         showModifiers = findViewById(R.id.modifiersCheckBox);
-        fullDaysOnly = findViewById(R.id.wholeDayCheckBox);
         daysOffSwitch = findViewById(R.id.daysOffCheckBox);
         onlyVTA = findViewById(R.id.onlyVTACheckBox);
 
@@ -168,9 +168,7 @@ public class MainActivity extends Activity {
         }
 
         if (!prefs.contains("fullDaysOnly")) {
-            editor.putBoolean("fullDaysOnly", fullDaysOnly.isChecked());
-        } else {
-            fullDaysOnly.setChecked(prefs.getBoolean("fullDaysOnly", false));
+            editor.putBoolean("fullDaysOnly", false);
         }
         if (!prefs.contains("daysOff")) {
             editor.putBoolean("daysOff", daysOffSwitch.isChecked());
@@ -184,8 +182,8 @@ public class MainActivity extends Activity {
             onlyVTA.setChecked(prefs.getBoolean("onlyVTA", false));
         }
 
-        if (!prefs.contains("whatsNew")) {
-            //editor.putString("whatsNew", BuildConfig.VERSION_NAME);
+        if (!prefs.contains("whatsNew") || !prefs.getString("whatsNew", "").equals(BuildConfig.VERSION_NAME)) {
+            editor.putString("whatsNew", BuildConfig.VERSION_NAME);
         } else {
             findViewById(R.id.newFeatureTextView).setVisibility(View.GONE);
         }
@@ -217,22 +215,11 @@ public class MainActivity extends Activity {
             editor12.apply();
         });
 
-        fullDaysOnly.setOnCheckedChangeListener((compoundButton, b) -> {
-            btnReset.callOnClick();
-            SharedPreferences prefs13 = getSharedPreferences(getString(R.string.sharedPrefs), Context.MODE_PRIVATE);
-            SharedPreferences.Editor editor13 = prefs13.edit();
-            editor13.putBoolean("fullDaysOnly", compoundButton.isChecked());
-            editor13.apply();
-        });
 
         daysOffSwitch.setOnCheckedChangeListener((compoundButton, b) -> {
             SharedPreferences prefs14 = getSharedPreferences(getString(R.string.sharedPrefs), Context.MODE_PRIVATE);
             SharedPreferences.Editor editor14 = prefs14.edit();
             editor14.putBoolean("daysOff", compoundButton.isChecked());
-            if (findViewById(R.id.newFeatureTextView).getVisibility() == View.VISIBLE) {
-                editor14.putString("whatsNew", BuildConfig.VERSION_NAME);
-                findViewById(R.id.newFeatureTextView).setVisibility(View.GONE);
-            }
             editor14.apply();
             returnDaysOff = compoundButton.isChecked();
             btnReset.callOnClick();
@@ -289,10 +276,17 @@ public class MainActivity extends Activity {
             handleFileIntent(fileUri);
         }
 
+        buttonSettings.setOnClickListener(view -> {
+            btnReset.callOnClick();
+            Intent intent1 = new Intent(MainActivity.this, SettingsActivity.class);
+            startActivity(intent1);
+        });
+
         performAnimations();
         checkForAppUpdates();
         remoteConfig();
 
+        // ;)
         Circus circus = new Circus(this, toolbar);
         circus.startTheShow();
     }
@@ -344,7 +338,6 @@ public class MainActivity extends Activity {
      * When the user clicks on this CardView, they will be sent to the Google Play page to manually update.
      */
     private void checkForAppUpdates() {
-
         AppUpdateManager updateManager = AppUpdateManagerFactory.create(this);
         Task<AppUpdateInfo> appUpdateInfoTask = updateManager.getAppUpdateInfo();
 
@@ -473,7 +466,7 @@ public class MainActivity extends Activity {
         shiftsFileContentView.setText(ShiftsFileReader.fullFileString());
         iCalContentView.setText(shiftsFileReader.getCalendarICS());
 
-        if (ShiftsFileReader.dw.size() > 0) {
+        if (!ShiftsFileReader.dw.isEmpty()) {
             if (ShiftsFileReader.weekNumber > 54)
                 loadedSuccess.setText("Jaar " + ShiftsFileReader.yearNumber + " geladen!");
             else
@@ -504,9 +497,55 @@ public class MainActivity extends Activity {
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-                    Bundle params = new Bundle();
-                    params.putString("converted_dws", "1");
-                    analytics.logEvent("converted_dws", params);
+                    //Analytics
+                    if(!isDev) {
+                        Bundle params = new Bundle();
+                        params.putString("converted_dws", "1");
+                        analytics.logEvent("converted_dws", params);
+
+                        if(showProfession.isChecked()) {
+                            Bundle bundle2 = new Bundle();
+                            bundle2.putString("options_withprofession", "1");
+                            analytics.logEvent("options_withprofession", bundle2);
+                        }
+                        if(showModifiers.isChecked()) {
+                            Bundle bundle2 = new Bundle();
+                            bundle2.putString("options_additionalsymbols", "1");
+                            analytics.logEvent("options_additionalsymbols", bundle2);
+                        }
+                        if(daysOffSwitch.isChecked()) {
+                            Bundle bundle2 = new Bundle();
+                            bundle2.putString("options_withdaysoff", "1");
+                            analytics.logEvent("options_withdaysoff", bundle2);
+                        }
+                        if(onlyVTA.isChecked()) {
+                            Bundle bundle2 = new Bundle();
+                            bundle2.putString("options_withdaysoff_onlyvta", "1");
+                            analytics.logEvent("options_withdaysoff_onlyvta", bundle2);
+                        }
+
+                        SharedPreferences prefs = getSharedPreferences(getString(R.string.sharedPrefs), Context.MODE_PRIVATE);
+                        if(!prefs.getBoolean("fullDaysOnly", false)) {
+                            Bundle bundle2 = new Bundle();
+                            bundle2.putString("options_entiredays", "1");
+                            analytics.logEvent("options_entiredays", bundle2);
+                        }
+                        if(prefs.getString("toIgnore", "").isBlank()) {
+                            Bundle bundle2 = new Bundle();
+                            bundle2.putString("options_ignoreshift", "1");
+                            analytics.logEvent("options_ignoreshift", bundle2);
+                        }
+                        if(prefs.getString("prefix", "").isBlank()) {
+                            Bundle bundle2 = new Bundle();
+                            bundle2.putString("options_prefix", "1");
+                            analytics.logEvent("options_prefix", bundle2);
+                        }
+                        if(prefs.getString("replacement", "").isBlank()) {
+                            Bundle bundle2 = new Bundle();
+                            bundle2.putString("options_replacetitle", "1");
+                            analytics.logEvent("options_replacetitle", bundle2);
+                        }
+                    }
 
                     startActivity(intent);
                 } catch (ActivityNotFoundException e) {
@@ -540,6 +579,4 @@ public class MainActivity extends Activity {
         returnDaysOff = daysOff;
         returnOnlyVTA = onlyVTA;
     }
-
-
 }

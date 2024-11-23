@@ -36,4 +36,14 @@
     <string name="nieuw_rustdagen">Nieuw! Je kunt nu óók rustdagen en/of VTA-componenten (VL, CF etc.) toevoegen.</string>
     <string name="warning_symbol">Warning symbol</string>
     <string name="bericht_van_de_ontwikkelaar_n_nblablablablabla_blablablablablablablablablabla_blablablablabla_blablablablablablablablablabla">Bericht van de ontwikkelaar:\n\nBLABLABLABLABLA BLABLABLABLABLABLABLABLABLABLA BLABLABLABLABLA BLABLABLABLABLABLABLABLABLABLA</string>
+    <string name="agendapunten_duren_hele_dagen">Agendapunten duren hele dagen</string>
+    <string name="dienstnummers_om_te_negeren">Dienstnummers om te negeren</string>
+    <string name="deze_dienstnummers_worden">Deze dienstnummers worden niet verwerkt door de app en zullen daarom ook niet toegevoegd worden aan de kalender. Dit is met name handig voor collega\'s met nevenfuncties. Splits meerdere diensten met een komma. Bijv: \'TWO,5015,WA\' etc.</string>
+    <string name="dienstnummers">Dienstnummers</string>
+    <string name="agendapunten_hebben_een_prefix">Agendapunten hebben een prefix</string>
+    <string name="de_titels_van_de_agendapunten">De titels van de agendapunten zullen starten met deze zogenaamde prefix plus een spatie. Bijvoorbeeld: \'Treindienst\' HC Asd 123.</string>
+    <string name="prefix">Prefix</string>
+    <string name="vervangende_titels">Vervangende titels</string>
+    <string name="replacement_text">De app ondersteunt de mogelijkheid om bepaalde dienstnummers een andere titel te geven in de agenda. Gebruik: \'5015;Kantoordienst,1001;Instructie geven\'. Dit voorbeeld maakt het dat diensten met nummer 5015 de titel \'Kantoordienst\' krijgen, dienstnummer 1001 wordt \'Instructie geven\' etc.</string>
+    <string name="vervangingstekst">Vervangingstekst</string>
 </resources>
