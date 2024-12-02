@@ -214,8 +214,7 @@ public class MainActivity extends Activity {
             editor12.putBoolean("displayModifiers", compoundButton.isChecked());
             editor12.apply();
         });
-
-
+        
         daysOffSwitch.setOnCheckedChangeListener((compoundButton, b) -> {
             SharedPreferences prefs14 = getSharedPreferences(getString(R.string.sharedPrefs), Context.MODE_PRIVATE);
             SharedPreferences.Editor editor14 = prefs14.edit();
@@ -525,22 +524,22 @@ public class MainActivity extends Activity {
                         }
 
                         SharedPreferences prefs = getSharedPreferences(getString(R.string.sharedPrefs), Context.MODE_PRIVATE);
-                        if(!prefs.getBoolean("fullDaysOnly", false)) {
+                        if(prefs.getBoolean("fullDaysOnly", false)) {
                             Bundle bundle2 = new Bundle();
                             bundle2.putString("options_entiredays", "1");
                             analytics.logEvent("options_entiredays", bundle2);
                         }
-                        if(prefs.getString("toIgnore", "").isBlank()) {
+                        if(!prefs.getString("toIgnore", "").isBlank()) {
                             Bundle bundle2 = new Bundle();
                             bundle2.putString("options_ignoreshift", "1");
                             analytics.logEvent("options_ignoreshift", bundle2);
                         }
-                        if(prefs.getString("prefix", "").isBlank()) {
+                        if(!prefs.getString("prefix", "").isBlank()) {
                             Bundle bundle2 = new Bundle();
                             bundle2.putString("options_prefix", "1");
                             analytics.logEvent("options_prefix", bundle2);
                         }
-                        if(prefs.getString("replacement", "").isBlank()) {
+                        if(!prefs.getString("replacement", "").isBlank()) {
                             Bundle bundle2 = new Bundle();
                             bundle2.putString("options_replacetitle", "1");
                             analytics.logEvent("options_replacetitle", bundle2);
