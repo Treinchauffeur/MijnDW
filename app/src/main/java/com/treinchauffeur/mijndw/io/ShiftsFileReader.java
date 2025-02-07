@@ -537,7 +537,7 @@ public class ShiftsFileReader {
         return switch (modifier) {
             case "!", "@", ">", "<", "*", "?", "E", "#", "$", "%", "=", "P", "P!", "P@", "P>", "P<",
                  "P*", "P?", "PE", "P#", "P$", "P%", "P=", "E!", "E@", "E>", "E<", "E*", "E?", "E#",
-                 "E$", "E%", "E=" -> true;
+                 "E$", "E%", "E=", "[" -> true;
             default -> false;
         };
     }
