@@ -577,7 +577,7 @@ public class ShiftsFileReader {
     public static boolean isVTAComponent(String shiftNumber) {
         return switch (shiftNumber.toLowerCase()) {
             case "vl", "gvl", "wa", "wv", "co", "cf", "ot", "rt", "mt", "eg", "f", "rust terug",
-                 "overuren terug", "wtv vrij opneembaar", "wtv aangewezen" -> true;
+                 "overuren terug", "wtv vrij opneembaar", "wtv aangewezen", "verlof" -> true;
             default -> false;
         };
     }
