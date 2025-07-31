@@ -34,11 +34,13 @@ import com.google.android.play.core.install.model.UpdateAvailability;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
+import com.treinchauffeur.mijndw.io.NewFlow;
 import com.treinchauffeur.mijndw.io.ShiftsFileReader;
 import com.treinchauffeur.mijndw.misc.Circus;
 import com.treinchauffeur.mijndw.misc.Logger;
 import com.treinchauffeur.mijndw.misc.Settings;
 import com.treinchauffeur.mijndw.ui.ContinuousBackgroundAnimator;
+import com.treinchauffeur.mijndw.ui.NewFlowDialog;
 import com.treinchauffeur.mijndw.ui.StartupBackgroundAnimator;
 
 import java.io.File;
@@ -124,6 +126,10 @@ public class MainActivity extends Activity {
             if (item.getItemId() == R.id.devMode) {
                 item.setChecked(!item.isChecked());
                 setDev(item.isChecked());
+            }
+            if (item.getItemId() == R.id.newFlow) {
+                NewFlowDialog newFlowDialog = new NewFlowDialog(MainActivity.this, MainActivity.this);
+                newFlowDialog.show();
             }
             if (item.getItemId() == R.id.mailDev) {
                 final Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
@@ -463,7 +469,7 @@ public class MainActivity extends Activity {
         shiftsFileReader.resetData();
         shiftsFileReader.startConversion(this, uri, returnDaysOff, returnOnlyVTA);
         shiftsFileContentView.setText(ShiftsFileReader.fullFileString());
-        iCalContentView.setText(shiftsFileReader.getCalendarICS());
+        iCalContentView.setText(shiftsFileReader.getPersonalisedIcs());
 
         if (!ShiftsFileReader.dw.isEmpty()) {
             if (ShiftsFileReader.weekNumber > 54)
@@ -486,7 +492,7 @@ public class MainActivity extends Activity {
                     FileOutputStream out = new FileOutputStream(file);
                     OutputStreamWriter writer = new OutputStreamWriter(out);
 
-                    writer.write(shiftsFileReader.getCalendarICS());
+                    writer.write(shiftsFileReader.getPersonalisedIcs());
                     writer.close();
                     out.close();
 

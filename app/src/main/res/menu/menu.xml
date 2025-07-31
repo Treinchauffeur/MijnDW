@@ -8,6 +8,9 @@
         android:id="@+id/mailDev"
         android:title="@string/email_ontwikkelaar" />
     <item
+        android:id="@+id/newFlow"
+        android:title="@string/nieuwe_methode" />
+    <item
         android:id="@+id/aboutApp"
         android:title="@string/over_deze_app" />
 </menu>

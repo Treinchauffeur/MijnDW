@@ -15,6 +15,7 @@ public class Shift {
     private String location;
     private int lengthHours, lengthMinutes;
     private long startMillis, endMillis;
+    private String description;
 
     private String rawString;
 
@@ -175,6 +176,14 @@ public class Shift {
 
     public void setEndMillis(long endMillis) {
         this.endMillis = endMillis;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public String getNeatShiftNumber() {

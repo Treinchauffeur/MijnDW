@@ -46,4 +46,7 @@
     <string name="vervangende_titels">Vervangende titels</string>
     <string name="replacement_text">De app ondersteunt de mogelijkheid om bepaalde dienstnummers een andere titel te geven in de agenda. Gebruik: \'5015;Kantoordienst,1001;Instructie geven\'. Dit voorbeeld maakt het dat diensten met nummer 5015 de titel \'Kantoordienst\' krijgen, dienstnummer 1001 wordt \'Instructie geven\' etc.</string>
     <string name="vervangingstekst">Vervangingstekst</string>
+    <string name="nieuwe_methode">Nieuwe methode</string>
+    <string name="agendalink">Agendalink</string>
+    <string name="newflowtext">Zorg dat op het voorgaande scherm de juiste instellingen zijn gekozen. Plak daarna de link uit Wissel (DW -> Symbool rechts bovenin -> Volgende -> Andere app) in het onderstaande vak en druk op \'Invoeren\'.</string>
 </resources>

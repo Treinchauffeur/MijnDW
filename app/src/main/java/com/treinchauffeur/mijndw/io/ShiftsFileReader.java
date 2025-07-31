@@ -394,7 +394,7 @@ public class ShiftsFileReader {
      * @return the full, completed iCalendar String.
      */
     @SuppressLint("SimpleDateFormat")
-    public String getCalendarICS() {
+    public String getPersonalisedIcs() {
         SharedPreferences prefs = context.getSharedPreferences(context.getString(R.string.sharedPrefs), Context.MODE_PRIVATE);
         boolean displayModifiers = prefs.getBoolean("displayModifiers", true);
         boolean fullDaysOnly = prefs.getBoolean("fullDaysOnly", false);
@@ -548,7 +548,7 @@ public class ShiftsFileReader {
      * @param shiftNumber the given shift number to check.
      * @return whether it is a day off or not.
      */
-    private boolean isDayOff(String shiftNumber) {
+    public static boolean isDayOff(String shiftNumber) {
         return isRegularRestingDay(shiftNumber) || isVTAComponent(shiftNumber);
     }
 
@@ -558,9 +558,10 @@ public class ShiftsFileReader {
      * @param shiftNumber the given shift number to check.
      * @return whether it should be listed or not.
      */
-    private static boolean isRegularRestingDay(String shiftNumber) {
+    public static boolean isRegularRestingDay(String shiftNumber) {
         return switch (shiftNumber.toLowerCase()) {
-            case "r", "streepjesdag", "--", "wr", "ro", "ow" -> true;
+            case "r", "streepjesdag", "--", "wr", "ro", "ow", "rust", "wtv", "wtv rust",
+                 "wtv-dag", "wtv dag" -> true;
             default -> false;
         };
     }
@@ -573,9 +574,10 @@ public class ShiftsFileReader {
      * @param shiftNumber the given shift number to check.
      * @return whether it should be listed or not.
      */
-    private static boolean isVTAComponent(String shiftNumber) {
+    public static boolean isVTAComponent(String shiftNumber) {
         return switch (shiftNumber.toLowerCase()) {
-            case "vl", "gvl", "wa", "wv", "co", "cf", "ot", "rt", "mt", "eg", "f" -> true;
+            case "vl", "gvl", "wa", "wv", "co", "cf", "ot", "rt", "mt", "eg", "f", "rust terug",
+                 "overuren terug", "wtv vrij opneembaar", "wtv aangewezen" -> true;
             default -> false;
         };
     }
