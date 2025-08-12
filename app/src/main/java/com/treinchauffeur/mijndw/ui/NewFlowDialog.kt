@@ -35,7 +35,6 @@ import com.treinchauffeur.mijndw.io.ShiftsFileReader
 import com.treinchauffeur.mijndw.misc.Settings
 import com.treinchauffeur.mijndw.misc.Utils
 import com.treinchauffeur.mijndw.obj.Shift
-import kotlinx.coroutines.Runnable
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
@@ -117,8 +116,8 @@ open class NewFlowDialog(context: Context, protected val activity: MainActivity?
                 urlTextField!!.error = "Geen DW URL!"
                 return
             } else {
-                prefs.edit().putString("icsUrl", urlTextField!!.text.toString()).apply()
-                startFlow(urlTextField!!.text.toString(), context)
+                prefs.edit().putString("icsUrl", urlTextField!!.text.toString().replace("webcal://", "https://")).apply()
+                startFlow(urlTextField!!.text.toString().replace("webcal://", "https://"), context)
             }
             dismiss()
         }
