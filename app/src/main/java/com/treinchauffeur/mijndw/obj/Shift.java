@@ -214,6 +214,7 @@ public class Shift {
             case "co":
                 return "Compensatie onregelmatigheid";
             case "cf":
+            case "compensatie f-dag":
                 return "Compensatie feestdag";
             case "f":
                 return "Feestdag";
