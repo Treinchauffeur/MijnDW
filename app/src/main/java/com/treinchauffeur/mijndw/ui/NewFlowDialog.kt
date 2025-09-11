@@ -9,7 +9,6 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
-import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
@@ -197,7 +196,7 @@ open class NewFlowDialog(context: Context, protected val activity: MainActivity?
                 if (!shiftString.isNotEmpty()) continue
                 if (ShiftsFileReader.isDayOff(summary)) {
                     if (!daysOff) continue
-                    if (!onlyVTA && ShiftsFileReader.isVTAComponent(summary)) continue
+                    if (!onlyVTA && ShiftsFileReader.isVTAComponentOrSpecial(summary)) continue
                     shift.shiftNumber = summary
                     continue
                 }
@@ -237,7 +236,7 @@ open class NewFlowDialog(context: Context, protected val activity: MainActivity?
                 val event: VEvent = VEvent()
 
                 event.setSummary("")
-                event.summary.value += prefix + " "
+                event.summary.value += "$prefix "
 
                 if (displayProfession) event.summary.value += shift.profession + " "
 
@@ -270,7 +269,7 @@ open class NewFlowDialog(context: Context, protected val activity: MainActivity?
                 if (fullDaysOnly) event.setDateStart(Utils.atStartOfDay(start))
                 else if (daysOff && !onlyVTA && ShiftsFileReader.isDayOff(shift.shiftNumber))
                     event.setDateStart(Utils.atStartOfDay(start))
-                else if (daysOff && onlyVTA && ShiftsFileReader.isVTAComponent(shift.shiftNumber))
+                else if (daysOff && onlyVTA && ShiftsFileReader.isVTAComponentOrSpecial(shift.shiftNumber))
                     event.setDateStart(Utils.atStartOfDay(start))
                 else event.setDateStart(start)
 
