@@ -291,7 +291,7 @@ public class ShiftsFileReader {
                     Logger.debug(TAG, "Staff " + shift.getStaff().getStaffName() + " is free on " + dayArray[1] + ".");
                     if (!returnDaysOff)
                         continue;
-                    else if (returOnlyVTA && !isVTAComponentOrSpecial(shiftNumber))
+                    else if (returOnlyVTA && !isVTAComponent(shiftNumber))
                         continue;
                 } else {
                     startTime = dayArray[3];
@@ -453,7 +453,7 @@ public class ShiftsFileReader {
             if (fullDaysOnly) event.setDateStart(Utils.atStartOfDay(start));
             else if(returnDaysOff && !returOnlyVTA && isDayOff(shift.getShiftNumber()))
                 event.setDateStart(Utils.atStartOfDay(start));
-            else if(returnDaysOff && returOnlyVTA && isVTAComponentOrSpecial(shift.getShiftNumber()))
+            else if(returnDaysOff && returOnlyVTA && isVTAComponent(shift.getShiftNumber()))
                 event.setDateStart(Utils.atStartOfDay(start));
             else event.setDateStart(start);
 
@@ -549,7 +549,7 @@ public class ShiftsFileReader {
      * @return whether it is a day off or not.
      */
     public static boolean isDayOff(String shiftNumber) {
-        return isRegularRestingDay(shiftNumber) || isVTAComponentOrSpecial(shiftNumber);
+        return isRegularRestingDay(shiftNumber) || isVTAComponent(shiftNumber);
     }
 
     /**
@@ -574,11 +574,17 @@ public class ShiftsFileReader {
      * @param shiftNumber the given shift number to check.
      * @return whether it should be listed or not.
      */
-    public static boolean isVTAComponentOrSpecial(String shiftNumber) {
+    public static boolean isVTAComponent(String shiftNumber) {
         return switch (shiftNumber.toLowerCase()) {
             case "vl", "gvl", "wa", "wv", "co", "cf", "ot", "rt", "mt", "eg", "f", "rust terug",
-                 "overuren terug", "wtv vrij opneembaar", "wtv aangewezen", "verlof", "compensatie f-dag",
-                 "cursus" -> true;
+                 "overuren terug", "wtv vrij opneembaar", "wtv aangewezen", "verlof", "compensatie f-dag", "ziek" -> true;
+            default -> false;
+        };
+    }
+
+    public static boolean isSpecial(String shiftNumber) {
+        return switch (shiftNumber.toLowerCase()) {
+            case "cursus", "taakgericht werk overleg" -> true;
             default -> false;
         };
     }

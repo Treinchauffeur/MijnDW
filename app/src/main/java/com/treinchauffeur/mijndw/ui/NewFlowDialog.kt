@@ -43,6 +43,7 @@ import java.io.OutputStreamWriter
 import java.util.Date
 import java.util.Objects
 import java.util.concurrent.TimeUnit
+import androidx.core.graphics.drawable.toDrawable
 
 open class NewFlowDialog(context: Context, protected val activity: MainActivity?) : Dialog(context),
     View.OnClickListener {
@@ -59,11 +60,10 @@ open class NewFlowDialog(context: Context, protected val activity: MainActivity?
 
     var urlTextField: EditText? = null
 
-    @SuppressLint("DiscouragedApi")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requestWindowFeature(Window.FEATURE_NO_TITLE)
-        window!!.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        window!!.setBackgroundDrawable(Color.TRANSPARENT.toDrawable())
         setContentView(R.layout.dialog_new_flow)
         analytics = FirebaseAnalytics.getInstance(context)
 
@@ -196,14 +196,24 @@ open class NewFlowDialog(context: Context, protected val activity: MainActivity?
                 if (!shiftString.isNotEmpty()) continue
                 if (ShiftsFileReader.isDayOff(summary)) {
                     if (!daysOff) continue
-                    if (!onlyVTA && ShiftsFileReader.isVTAComponentOrSpecial(summary)) continue
+                    if (!onlyVTA && ShiftsFileReader.isVTAComponent(summary)) continue
                     shift.shiftNumber = summary
                     continue
                 }
 
-                shift.profession = Utils.capitaliseFirstLetter(shiftString[0])
-                shift.location = Utils.capitaliseFirstLetter(shiftString[1])
-                shift.shiftNumber = shiftString[2]
+                if(summary.isEmpty()) {
+                    continue
+                }
+
+                if(ShiftsFileReader.isSpecial(summary)) {
+                    shift.shiftNumber = summary
+                    shift.location = ""
+                    shift.profession = ""
+                } else {
+                    shift.profession = Utils.capitaliseFirstLetter(shiftString[0])
+                    shift.location = Utils.capitaliseFirstLetter(shiftString[1])
+                    shift.shiftNumber = shiftString[2]
+                }
 
                 shift.startMillis = event.dateStart.value.time
                 shift.endMillis = event.dateEnd.value.time
@@ -236,9 +246,13 @@ open class NewFlowDialog(context: Context, protected val activity: MainActivity?
                 val event: VEvent = VEvent()
 
                 event.setSummary("")
-                event.summary.value += "$prefix "
 
-                if (displayProfession) event.summary.value += shift.profession + " "
+                Log.d(TAG, "${shift.shiftNumber}")
+                if(!ShiftsFileReader.isSpecial(shift.shiftNumber)) {
+                    event.summary.value += "$prefix "
+
+                    if (displayProfession) event.summary.value += shift.profession + " "
+                }
 
                 var shouldSkip = false;
                 for (s in toIgnore) {
@@ -257,10 +271,10 @@ open class NewFlowDialog(context: Context, protected val activity: MainActivity?
                         break;
                     }
                 }
-                if (!replaced) {
+                if (!replaced && !ShiftsFileReader.isSpecial(shift.shiftNumber)) {
                     event.summary.value += shift.location + " "
                     event.summary.value += shift.shiftNumber + " "
-                } else event.summary.value = shift.neatShiftNumber + " "
+                } else event.summary.value = shift.neatShiftNumber + ""
 
                 event.setDescription("")
                 event.description.value = shift.description
@@ -269,7 +283,7 @@ open class NewFlowDialog(context: Context, protected val activity: MainActivity?
                 if (fullDaysOnly) event.setDateStart(Utils.atStartOfDay(start))
                 else if (daysOff && !onlyVTA && ShiftsFileReader.isDayOff(shift.shiftNumber))
                     event.setDateStart(Utils.atStartOfDay(start))
-                else if (daysOff && onlyVTA && ShiftsFileReader.isVTAComponentOrSpecial(shift.shiftNumber))
+                else if (daysOff && onlyVTA && ShiftsFileReader.isVTAComponent(shift.shiftNumber))
                     event.setDateStart(Utils.atStartOfDay(start))
                 else event.setDateStart(start)
 
@@ -281,7 +295,6 @@ open class NewFlowDialog(context: Context, protected val activity: MainActivity?
                         .minutes(shift.lengthMinutes)
                         .build()
                 }
-                Log.d(TAG, "Duration: $")
                 event.setDuration(duration)
 
                 if (ShiftsFileReader.isDayOff(shift.shiftNumber)) {
