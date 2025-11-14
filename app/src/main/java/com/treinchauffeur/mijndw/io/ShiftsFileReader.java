@@ -584,7 +584,7 @@ public class ShiftsFileReader {
 
     public static boolean isSpecial(String shiftNumber) {
         return switch (shiftNumber.toLowerCase()) {
-            case "cursus", "taakgericht werk overleg" -> true;
+            case "cursus", "taakgericht werk overleg", "wegleren" -> true;
             default -> false;
         };
     }
