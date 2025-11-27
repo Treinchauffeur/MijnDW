@@ -2,15 +2,19 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:checkable="true"
-        android:id="@+id/devMode"
+        android:id="@+id/devModeMenuItem"
         android:title="@string/informatie_voor_ontwikkelaars" />
     <item
-        android:id="@+id/mailDev"
+        android:id="@+id/mailDevMenuItem"
         android:title="@string/email_ontwikkelaar" />
     <item
-        android:id="@+id/newFlow"
-        android:title="@string/nieuwe_methode" />
+        android:id="@+id/newFlowMenuItem"
+        android:title="@string/nieuwe_methode"
+        android:visible="false"/>
     <item
-        android:id="@+id/aboutApp"
+        android:id="@+id/whatsNewMenuItem"
+        android:title="@string/wat_is_nieuw"/>
+    <item
+        android:id="@+id/aboutAppMenuItem"
         android:title="@string/over_deze_app" />
 </menu>

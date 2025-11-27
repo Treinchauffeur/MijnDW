@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Mijn DW</string>
-    <string name="welcomeInfo">Hey collega! Welkom bij de Mijn DW app; een app geschreven vóór en dóór collega\'s die het mogelijk maakt om de diensten uit je DW direct in je agenda te zetten. Handig toch?</string>
+    <string name="welcomeInfo">Hey collega! Welkom bij de Mijn DW app; een app geschreven vóór en dóór collega\'s die het mogelijk maakt om de diensten uit je DW direct in je agenda te zetten. Handig, toch?</string>
     <string name="usageInfo">Download éérst het tekstbestand dat bij de DW-mail wordt geleverd. Selecteer daarna eventueel opties hier beneden. Laad ten slotte het gedownloade bestand in middels de knop.</string>
     <string name="modifiersText"><![CDATA[Geef extra dienst-symbolen weer in agendapunt-titel. Bijv: !, @, > etc.]]></string>
     <string name="professionText"><![CDATA[Start agendapunt met functietitel. Bijv: Mcn … of HC …]]></string>
@@ -48,5 +48,9 @@
     <string name="vervangingstekst">Vervangingstekst</string>
     <string name="nieuwe_methode">Nieuwe methode</string>
     <string name="agendalink">Agendalink</string>
-    <string name="newflowtext">Zorg dat op het voorgaande scherm de juiste instellingen zijn gekozen. Plak daarna de link uit Wissel (DW -> Symbool rechts bovenin -> Volgende -> Andere app) in het onderstaande vak en druk op \'Invoeren\'.</string>
+    <string name="newflowtext">Selecteer in het onderstaande menu de gewenste instellingen. Deze app functioneert middels de agendalink die te verkrijgen is vanuit wissel. Deze is te vinden op de pagina van de donderdagseweek -> Symbool rechts bovenin -> Volgende -> Andere app. Plak deze link in het venster dat geopend wordt met de knop onderaan deze pagina.</string>
+    <string name="agendalink_invoeren">Agendalink invoeren</string>
+    <string name="geen_agendalink">Er is geen agendalink ingevoerd.</string>
+    <string name="wat_is_nieuw">Wat is nieuw?</string>
+    <string name="news_text">Nieuw! Door de landelijke overgang naar Shift werkt de oude methode niet langer. Deze is daarom verwijderd uit de app.</string>
 </resources>

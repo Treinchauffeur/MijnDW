@@ -34,7 +34,6 @@ import com.google.android.play.core.install.model.UpdateAvailability;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
-import com.treinchauffeur.mijndw.io.NewFlow;
 import com.treinchauffeur.mijndw.io.ShiftsFileReader;
 import com.treinchauffeur.mijndw.misc.Circus;
 import com.treinchauffeur.mijndw.misc.Logger;
@@ -59,7 +58,7 @@ public class MainActivity extends Activity {
     private boolean returnDaysOff = false, returnOnlyVTA = false;
 
     ShiftsFileReader shiftsFileReader;
-    Button btnConvert, btnLoadFile, btnReset, buttonSettings;
+    Button btnConvert, btnLinkDialog, btnReset, buttonSettings;
     EditText shiftsFileContentView, iCalContentView;
     TextView loadedNone, loadedSuccess, loadedError, devHint;
     CardView welcomeCard, usageCard, updateCard, remoteCard;
@@ -106,7 +105,7 @@ public class MainActivity extends Activity {
         devHint = findViewById(R.id.devHint);
         shiftsFileContentView = findViewById(R.id.dwContent);
         iCalContentView = findViewById(R.id.icsContent);
-        btnLoadFile = findViewById(R.id.btnLoadFile);
+        btnLinkDialog = findViewById(R.id.btnLinkDialog);
         btnConvert = findViewById(R.id.btnConvertFile);
         btnReset = findViewById(R.id.btnReset);
         buttonSettings = findViewById(R.id.advancedSettingsButton);
@@ -123,15 +122,18 @@ public class MainActivity extends Activity {
         onlyVTA = findViewById(R.id.onlyVTACheckBox);
 
         toolbar.setOnMenuItemClickListener(item -> {
-            if (item.getItemId() == R.id.devMode) {
+            if (item.getItemId() == R.id.devModeMenuItem) {
                 item.setChecked(!item.isChecked());
                 setDev(item.isChecked());
             }
-            if (item.getItemId() == R.id.newFlow) {
+            if (item.getItemId() == R.id.whatsNewMenuItem) {
+                findViewById(R.id.newFeatureTextView).setVisibility(View.VISIBLE);
+            }
+            if (item.getItemId() == R.id.newFlowMenuItem) {
                 NewFlowDialog newFlowDialog = new NewFlowDialog(MainActivity.this, MainActivity.this);
                 newFlowDialog.show();
             }
-            if (item.getItemId() == R.id.mailDev) {
+            if (item.getItemId() == R.id.mailDevMenuItem) {
                 final Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
                 emailIntent.setData(Uri.parse("mailto:"));
                 emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{Settings.DEV_EMAIL});
@@ -139,7 +141,7 @@ public class MainActivity extends Activity {
                 emailIntent.putExtra(Intent.EXTRA_TEXT, "Mijn DW versie " + BuildConfig.VERSION_NAME);
                 startActivity(Intent.createChooser(emailIntent, "E-mail versturen.."));
             }
-            if (item.getItemId() == R.id.aboutApp) {
+            if (item.getItemId() == R.id.aboutAppMenuItem) {
                 Intent aboutIntent = new Intent(MainActivity.this, AboutActivity.class);
                 startActivity(aboutIntent);
             }
@@ -190,6 +192,7 @@ public class MainActivity extends Activity {
 
         if (!prefs.contains("whatsNew") || !prefs.getString("whatsNew", "").equals(BuildConfig.VERSION_NAME)) {
             editor.putString("whatsNew", BuildConfig.VERSION_NAME);
+            findViewById(R.id.newFeatureTextView).setVisibility(View.VISIBLE);
         } else {
             findViewById(R.id.newFeatureTextView).setVisibility(View.GONE);
         }
@@ -261,18 +264,20 @@ public class MainActivity extends Activity {
             loadedNone.setVisibility(View.VISIBLE);
             loadedSuccess.setVisibility(View.GONE);
             loadedError.setVisibility(View.GONE);
-            btnLoadFile.setVisibility(View.VISIBLE);
+            btnLinkDialog.setVisibility(View.VISIBLE);
             btnConvert.setVisibility(View.GONE);
             btnReset.setVisibility(View.GONE);
         });
 
         shiftsFileReader = new ShiftsFileReader(this);
 
-        btnLoadFile.setOnClickListener(view -> {
-            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        btnLinkDialog.setOnClickListener(view -> {
+            /*Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
             intent.addCategory(Intent.CATEGORY_OPENABLE);
             intent.setType("text/*");
-            startActivityForResult(intent, PICK_FILE_REQUEST);
+            startActivityForResult(intent, PICK_FILE_REQUEST);*/
+            NewFlowDialog newFlowDialog = new NewFlowDialog(MainActivity.this, MainActivity.this);
+            newFlowDialog.show();
         });
 
         Intent intent = getIntent();
@@ -480,7 +485,7 @@ public class MainActivity extends Activity {
             loadedNone.setVisibility(View.GONE);
             loadedError.setVisibility(View.GONE);
 
-            btnLoadFile.setVisibility(View.GONE);
+            btnLinkDialog.setVisibility(View.GONE);
             btnReset.setVisibility(View.VISIBLE);
             btnConvert.setVisibility(View.VISIBLE);
 
@@ -567,7 +572,7 @@ public class MainActivity extends Activity {
             loadedSuccess.setVisibility(View.GONE);
             loadedNone.setVisibility(View.GONE);
 
-            btnLoadFile.setVisibility(View.VISIBLE);
+            btnLinkDialog.setVisibility(View.VISIBLE);
             btnReset.setVisibility(View.GONE);
             btnConvert.setVisibility(View.GONE);
         }

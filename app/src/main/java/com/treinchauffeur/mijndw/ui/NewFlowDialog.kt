@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -17,8 +16,10 @@ import android.widget.Button
 import android.widget.CheckBox
 import android.widget.CompoundButton
 import android.widget.EditText
+import androidx.annotation.LongDef
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.FileProvider
+import androidx.core.graphics.drawable.toDrawable
 import biweekly.Biweekly
 import biweekly.ICalendar
 import biweekly.component.VEvent
@@ -43,7 +44,6 @@ import java.io.OutputStreamWriter
 import java.util.Date
 import java.util.Objects
 import java.util.concurrent.TimeUnit
-import androidx.core.graphics.drawable.toDrawable
 
 open class NewFlowDialog(context: Context, protected val activity: MainActivity?) : Dialog(context),
     View.OnClickListener {
@@ -169,7 +169,7 @@ open class NewFlowDialog(context: Context, protected val activity: MainActivity?
             val dwNext = ArrayList<Shift>()
             val dwMerged = arrayListOf<Shift>()
             val calendar = Biweekly.parse(ics).first()
-            val exportCalendar: ICalendar = ICalendar()
+            val exportCalendar = ICalendar()
             val prefs: SharedPreferences = context.getSharedPreferences(
                 context.getString(R.string.sharedPrefs),
                 Context.MODE_PRIVATE
@@ -185,6 +185,7 @@ open class NewFlowDialog(context: Context, protected val activity: MainActivity?
             val params = Bundle()
             params.putString("newflow_attempt", "1")
             analytics.logEvent("newflow_attempt", params)
+            var standplaats = ""
 
             for (event in calendar.events) {
                 val shift = Shift()
@@ -215,6 +216,9 @@ open class NewFlowDialog(context: Context, protected val activity: MainActivity?
                     shift.shiftNumber = shiftString[2]
                 }
 
+                if(!shift.location.isEmpty() || shift.location.contains("!"))
+                    standplaats = shift.location
+
                 shift.startMillis = event.dateStart.value.time
                 shift.endMillis = event.dateEnd.value.time
                 var diff: Long = shift.endMillis - shift.startMillis
@@ -234,6 +238,14 @@ open class NewFlowDialog(context: Context, protected val activity: MainActivity?
                     else -> dwPrevious.add(shift)
                 }
             }
+
+            if(standplaats.isNotEmpty()) {
+                val params = Bundle()
+                params.putString("standplaats", standplaats)
+                analytics.logEvent("standplaats", params)
+                Log.d("Standplaats", standplaats)
+            }
+
             Log.d(TAG, "prev: ${dwPrevious.size}")
             Log.d(TAG, "current: ${dwCurrent.size}")
             Log.d(TAG, "next: ${dwNext.size}")
