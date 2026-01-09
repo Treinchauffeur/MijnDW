@@ -150,7 +150,7 @@ open class NewFlowDialog(context: Context, protected val activity: MainActivity?
                     if (!it.isSuccessful) {
                         Log.e("HTTP_REQUEST", "Unexpected code $response")
                         errorMessageContent = response.toString()
-                        showErrorDialog(context)
+                        showErrorDialog(context, null)
                         return
                     }
 
@@ -254,6 +254,11 @@ open class NewFlowDialog(context: Context, protected val activity: MainActivity?
             if (currentWeek) dwMerged.addAll(dwCurrent)
             if (nextWeek) dwMerged.addAll(dwNext)
 
+            if(dwMerged.isEmpty()) {
+                showErrorDialog(context, "EmptyList")
+                return
+            }
+
             for (shift in dwMerged) {
                 val event: VEvent = VEvent()
 
@@ -342,7 +347,7 @@ open class NewFlowDialog(context: Context, protected val activity: MainActivity?
             }
         } catch (e: Exception) {
             Log.e(TAG, "icsToDw: ", e)
-            showErrorDialog(context)
+            showErrorDialog(context, null)
         }
     }
 
@@ -353,7 +358,7 @@ open class NewFlowDialog(context: Context, protected val activity: MainActivity?
      * @param context The context.
      * @param reason Where something went wrong.
      */
-    private fun showErrorDialog(context: Context) { // Removed static, can be top-level or in a companion object
+    private fun showErrorDialog(context: Context, reasen: String?) { // Removed static, can be top-level or in a companion object
         var view: ConstraintLayout? = activity?.findViewById<ConstraintLayout>(R.id.parentView)
         view?.post({
             val params = Bundle()
@@ -366,6 +371,10 @@ open class NewFlowDialog(context: Context, protected val activity: MainActivity?
             
             Je kan eventueel deze mail zelf nog bewerken om je personeelsnummer en andere gevoelige gegevens aan te passen of te verwijderen.
             """.trimIndent() // Using trimIndent for cleaner multiline strings
+
+            if(reasen == "EmptyList") bodyText = "De lijst met gevonden agendapunten is leeg. Dit kan te maken hebben met de jaarwisseling, helaas heb ik niet de tijd om hiervoor tijdig nog een oplossing te ontwikkelen.\n\nZou je deze willen emailen naar de ontwikkelaar voor analyse zodat deze de app kan verbeteren? :)\n" +
+                    "\n" +
+                    "Je kan eventueel deze mail zelf nog bewerken om je personeelsnummer en andere gevoelige gegevens aan te passen of te verwijderen.\n"
 
             MaterialAlertDialogBuilder(context, R.style.ThemeOverlay_App_MaterialErrorDialog)
                 .setTitle("Fout opgetreden")
