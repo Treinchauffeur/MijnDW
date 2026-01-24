@@ -194,7 +194,7 @@ open class NewFlowDialog(context: Context, protected val activity: MainActivity?
                 val shiftString = summary.split(" ")
                 //Log.d(TAG, "icsToDw: $summary") //Print all for debug purposes
 
-                if (!shiftString.isNotEmpty()) continue
+                if (shiftString.isEmpty()) continue
                 if (ShiftsFileReader.isDayOff(summary)) {
                     if (!daysOff) continue
                     if (!onlyVTA && ShiftsFileReader.isVTAComponent(summary)) continue
@@ -206,7 +206,8 @@ open class NewFlowDialog(context: Context, protected val activity: MainActivity?
                     continue
                 }
 
-                if(ShiftsFileReader.isSpecial(summary)) {
+                val specialSubstrings = listOf("hc ", "mcn ", "smw ", "vs ", "tm ")
+                if (ShiftsFileReader.isSpecial(summary) || !specialSubstrings.any { summary.lowercase().contains(it) }) {
                     shift.shiftNumber = summary
                     shift.location = ""
                     shift.profession = ""
@@ -372,9 +373,9 @@ open class NewFlowDialog(context: Context, protected val activity: MainActivity?
             Je kan eventueel deze mail zelf nog bewerken om je personeelsnummer en andere gevoelige gegevens aan te passen of te verwijderen.
             """.trimIndent() // Using trimIndent for cleaner multiline strings
 
-            if(reasen == "EmptyList") bodyText = "De lijst met gevonden agendapunten is leeg. Dit kan te maken hebben met de jaarwisseling, helaas heb ik niet de tijd om hiervoor tijdig nog een oplossing te ontwikkelen.\n\nZou je deze willen emailen naar de ontwikkelaar voor analyse zodat deze de app kan verbeteren? :)\n" +
+            /**if(reasen == "EmptyList") bodyText = "De lijst met gevonden agendapunten is leeg. Dit kan te maken hebben met de jaarwisseling, helaas heb ik niet de tijd om hiervoor tijdig nog een oplossing te ontwikkelen.\n\nZou je deze willen emailen naar de ontwikkelaar voor analyse zodat deze de app kan verbeteren? :)\n" +
                     "\n" +
-                    "Je kan eventueel deze mail zelf nog bewerken om je personeelsnummer en andere gevoelige gegevens aan te passen of te verwijderen.\n"
+                    "Je kan eventueel deze mail zelf nog bewerken om je personeelsnummer en andere gevoelige gegevens aan te passen of te verwijderen.\n"**/
 
             MaterialAlertDialogBuilder(context, R.style.ThemeOverlay_App_MaterialErrorDialog)
                 .setTitle("Fout opgetreden")

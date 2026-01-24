@@ -561,7 +561,7 @@ public class ShiftsFileReader {
     public static boolean isRegularRestingDay(String shiftNumber) {
         return switch (shiftNumber.toLowerCase()) {
             case "r", "streepjesdag", "--", "wr", "ro", "ow", "rust", "wtv", "wtv rust",
-                 "wtv-dag", "wtv dag" -> true;
+                 "wtv-dag", "wtv dag", "streepjesdag voltijders" -> true;
             default -> false;
         };
     }
@@ -584,7 +584,8 @@ public class ShiftsFileReader {
 
     public static boolean isSpecial(String shiftNumber) {
         return switch (shiftNumber.toLowerCase()) {
-            case "cursus", "taakgericht werk overleg", "wegleren", "luisteris" -> true;
+            case "cursus", "taakgericht werk overleg", "wegleren", "luisteris", "proces overleg commissie",
+                 "regeling oudere werknemer", "" -> true;
             default -> false;
         };
     }
